@@ -33,7 +33,6 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 [foxentry_validator type="email"]     - Validátor emailových adres
 [foxentry_validator type="phone"]     - Validátor telefonních čísel  
 [foxentry_validator type="address"]   - Validátor fyzických adres
-[foxentry_promo]                      - Propagační banner Foxentry
 ```
 
 ## 📋 **Požadavky:**
@@ -42,10 +41,6 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * PHP 7.4+
 * Foxentry API klíč (získejte na [Foxentry](https://app.foxentry.com/registration?aff=or8eaq))
 
-## 🏢 **O autorovi:**
-
-Plugin vytvořen studiem **Webklient** - [www.webklient.cz](https://www.webklient.cz)  
-**Mediatoring.com s.r.o.** - Specializace na moderní webová řešení a WordPress development
 
 == Installation ==
 
@@ -195,3 +190,8 @@ Pro technickou podporu kontaktujte:
 * API komunikace je šifrovaná (HTTPS)
 
 **Více informací:** [Foxentry Privacy Policy](https://foxentry.com/privacy) | [API Dokumentace](https://foxentry.dev/reference/intro)
+
+== O autorovi ==
+
+Plugin vytvořen studiem **Webklient** - [www.webklient.cz](https://www.webklient.cz)  
+**Mediatoring.com s.r.o.** - Specializace na moderní webová řešení a WordPress development

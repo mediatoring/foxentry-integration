@@ -111,6 +111,14 @@ Plugin poskytuje moderní admin rozhraní s:
 ![Admin rozhraní](assets/api01.png)
 *Vizuální průvodce pro získání API klíče*
 
+### Vytvoření projektu (krok 3)
+![Vytvoření projektu](assets/api02.png)
+*Důležité: Vyberte "Aplikace" místo "Webová stránka"*
+
+### API klíče v administraci
+![API klíče](assets/api04.png)
+*Přejděte do Nastavení projektu > API klíče*
+
 ### Vytvoření API klíče
 ![API klíč](assets/api05.png)
 *Vytvoření a zkopírování API klíče*
@@ -213,15 +221,14 @@ Pro technickou podporu kontaktujte:
 
 Tento plugin je licencován pod GPL v2 nebo novější. Více informací najdete v [LICENSE](LICENSE) souboru.
 
-## 🏢 O autorovi
-
-Plugin vytvořen studiem **Webklient** - [www.webklient.cz](https://www.webklient.cz)  
-**Mediatoring.com s.r.o.** - Specializace na moderní webová řešení a WordPress development
-
-
 ---
 
 ⭐ **Pokud se vám plugin líbí, dejte nám hvězdičku na GitHubu!** ⭐
 
 [![GitHub stars](https://img.shields.io/github/stars/webklient/foxentry-integration?style=social)](https://github.com/webklient/foxentry-integration)
 [![WordPress](https://img.shields.io/wordpress/plugin/v/foxentry-integration?label=WordPress)](https://wordpress.org/plugins/foxentry-integration/)
+
+## 🏢 O autorovi
+
+Plugin vytvořen studiem **Webklient** - [www.webklient.cz](https://www.webklient.cz)  
+**Mediatoring.com s.r.o.** - Specializace na moderní webová řešení a WordPress development

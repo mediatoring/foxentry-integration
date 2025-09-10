@@ -25,12 +25,15 @@
             
             // Event listener pro všechny Foxentry validátory
             $(document).on('input keyup paste', '.foxentry-validator', function() {
+                console.log('Foxentry: Detekován input na validátoru');
                 var $input = $(this);
                 var inputId = $input.attr('id');
                 var value = $input.val().trim();
                 var type = $input.data('type');
                 var $form = $input.closest('.foxentry-form');
                 var $submitBtn = $form.find('.foxentry-submit-btn');
+                
+                console.log('Foxentry: Input hodnota:', value, 'Typ:', type);
                 
                 // Vyčištění předchozího timeoutu
                 if (self.timeouts[inputId]) {
@@ -94,6 +97,7 @@
         
         // Validace pole
         validateField: function($input, value, type) {
+            console.log('Foxentry: Začínám validaci pole:', value, 'Typ:', type);
             var self = this;
             var cacheKey = type + '_' + value;
             var $result = $('#' + $input.attr('id') + '_result');
@@ -118,6 +122,7 @@
             self.showLoading($input, $result);
             
             // AJAX volání
+            console.log('Foxentry: Odesílám AJAX požadavek pro validaci:', {value: value, type: type});
             $.ajax({
                 url: foxentry_ajax.ajax_url,
                 type: 'POST',
@@ -129,11 +134,15 @@
                 },
                 timeout: 10000,
                 success: function(response) {
+                    console.log('Foxentry: AJAX odpověď:', response);
                     if (response.success) {
+                        console.log('Foxentry: API data:', response.data);
                         var result = self.parseApiResponse(response.data, type);
+                        console.log('Foxentry: Parsed result:', result);
                         self.cache[cacheKey] = result;
                         self.showResult($input, $result, result);
                     } else {
+                        console.log('Foxentry: API chyba:', response.data);
                         self.showResult($input, $result, {
                             isValid: false,
                             message: foxentry_ajax.messages.validation_error + ' ' + response.data
@@ -203,18 +212,27 @@
         
         // Kontrola, zda je hodnota dostatečně kompletní pro validaci
         isValueComplete: function(value, type) {
+            console.log('Foxentry: Kontrola hodnoty:', value, 'Typ:', type);
             switch (type) {
                 case 'email':
                     // Email musí obsahovat @ a alespoň 5 znaků
-                    return value.length >= 5 && value.includes('@');
+                    var result = value.length >= 5 && value.includes('@');
+                    console.log('Foxentry: Email validace:', result);
+                    return result;
                 case 'phone':
                     // Telefon musí obsahovat alespoň 8 znaků a nějaká čísla
-                    return value.length >= 8 && /\d/.test(value);
+                    var result = value.length >= 8 && /\d/.test(value);
+                    console.log('Foxentry: Telefon validace:', result, 'Délka:', value.length, 'Obsahuje čísla:', /\d/.test(value));
+                    return result;
                 case 'address':
                     // Adresa musí být alespoň 10 znaků dlouhá
-                    return value.length >= 10;
+                    var result = value.length >= 10;
+                    console.log('Foxentry: Adresa validace:', result);
+                    return result;
                 default:
-                    return value.length >= 3;
+                    var result = value.length >= 3;
+                    console.log('Foxentry: Výchozí validace:', result);
+                    return result;
             }
         },
         
@@ -321,7 +339,31 @@
     
     // Inicializace při načtení DOM
     $(document).ready(function() {
+        console.log('Foxentry: Inicializace validátoru...');
         FoxentryValidator.init();
+        console.log('Foxentry: Validátor inicializován');
+        
+        // Debug: Zkontroluj počet validátorů
+        setTimeout(function() {
+            var validators = $('.foxentry-validator').length;
+            console.log('Foxentry: Nalezeno ' + validators + ' validátorů');
+            
+            // Debug: Zobraz všechny validátory
+            $('.foxentry-validator').each(function(index) {
+                console.log('Foxentry: Validátor ' + (index + 1) + ':', {
+                    name: $(this).attr('name'),
+                    id: $(this).attr('id'),
+                    type: $(this).attr('data-type'),
+                    class: $(this).attr('class')
+                });
+            });
+        }, 1000);
+        
+        // Debug: Zkontroluj po 3 sekundách (pro později načtené elementy)
+        setTimeout(function() {
+            var validators = $('.foxentry-validator').length;
+            console.log('Foxentry: Po 3 sekundách nalezeno ' + validators + ' validátorů');
+        }, 3000);
     });
     
     // Export pro globální použití
