@@ -1,0 +1,301 @@
+# Copyright (C) 2024 Webklient - Mediatoring.com s.r.o.
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Foxentry Integration 1.0.0\n"
+"Report-Msgid-Bugs-To: https://www.webklient.cz\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: foxentry-integration.php:82
+msgid "Foxentry Nastavení"
+msgstr ""
+
+#: foxentry-integration.php:83
+msgid "Foxentry"
+msgstr ""
+
+#: foxentry-integration.php:98
+msgid "Foxentry Nastavení"
+msgstr ""
+
+#: foxentry-integration.php:101
+msgid "Registrace na Foxentry:"
+msgstr ""
+
+#: foxentry-integration.php:104
+msgid "Zaregistrujte se zde pro získání API klíče"
+msgstr ""
+
+#: foxentry-integration.php:111
+msgid "Plugin vytvořen studiem Webklient"
+msgstr ""
+
+#: foxentry-integration.php:125
+msgid "API Klíč"
+msgstr ""
+
+#: foxentry-integration.php:128
+msgid "Zadejte váš Foxentry API klíč"
+msgstr ""
+
+#: foxentry-integration.php:132
+msgid "Cache doba (sekundy)"
+msgstr ""
+
+#: foxentry-integration.php:135
+msgid "Jak dlouho cachovat výsledky validace"
+msgstr ""
+
+#: foxentry-integration.php:143
+msgid "Použití"
+msgstr ""
+
+#: foxentry-integration.php:144
+msgid "Shortcodes:"
+msgstr ""
+
+#: foxentry-integration.php:145
+msgid "Validátor emailu"
+msgstr ""
+
+#: foxentry-integration.php:146
+msgid "Validátor telefonu"
+msgstr ""
+
+#: foxentry-integration.php:147
+msgid "Validátor adresy"
+msgstr ""
+
+#: foxentry-integration.php:148
+msgid "Propagační banner"
+msgstr ""
+
+#: foxentry-integration.php:150
+msgid "Test API připojení:"
+msgstr ""
+
+#: foxentry-integration.php:151
+msgid "Otestovat API"
+msgstr ""
+
+#: foxentry-integration.php:159
+msgid "Testování..."
+msgstr ""
+
+#: foxentry-integration.php:166
+msgid "API funguje správně!"
+msgstr ""
+
+#: foxentry-integration.php:167
+msgid "Chyba:"
+msgstr ""
+
+#: foxentry-integration.php:225
+msgid "Bezpečnostní chyba"
+msgstr ""
+
+#: foxentry-integration.php:232
+msgid "API klíč není nastaven"
+msgstr ""
+
+#: foxentry-integration.php:252
+msgid "Chyba při validaci"
+msgstr ""
+
+#: foxentry-integration.php:297
+msgid "Zadejte email adresu"
+msgstr ""
+
+#: foxentry-integration.php:298
+msgid "Zadejte telefonní číslo"
+msgstr ""
+
+#: foxentry-integration.php:299
+msgid "Zadejte adresu"
+msgstr ""
+
+#: foxentry-integration.php:302
+msgid "Zadejte hodnotu"
+msgstr ""
+
+#: foxentry-integration.php:341
+msgid "Bezpečnostní chyba"
+msgstr ""
+
+#: foxentry-integration.php:345
+msgid "Nedostatečná oprávnění"
+msgstr ""
+
+#: foxentry-integration.php:351
+msgid "API test úspěšný"
+msgstr ""
+
+#: foxentry-integration.php:353
+msgid "API test selhal - zkontrolujte API klíč"
+msgstr ""
+
+#: foxentry-integration.php:363
+msgid "Nastavení"
+msgstr ""
+
+#: foxentry-integration.php:319
+msgid "Ověřuji..."
+msgstr ""
+
+#: foxentry-integration.php:320
+msgid "Email je platný"
+msgstr ""
+
+#: foxentry-integration.php:321
+msgid "Email není platný"
+msgstr ""
+
+#: foxentry-integration.php:322
+msgid "Telefon je platný"
+msgstr ""
+
+#: foxentry-integration.php:323
+msgid "Telefonní číslo není platné"
+msgstr ""
+
+#: foxentry-integration.php:324
+msgid "Adresa je platná"
+msgstr ""
+
+#: foxentry-integration.php:325
+msgid "Adresa není platná"
+msgstr ""
+
+#: foxentry-integration.php:326
+msgid "Neplatný formát emailu"
+msgstr ""
+
+#: foxentry-integration.php:327
+msgid "Neplatný formát telefonu"
+msgstr ""
+
+#: foxentry-integration.php:328
+msgid "Adresa je příliš krátká"
+msgstr ""
+
+#: foxentry-integration.php:329
+msgid "Chyba při validaci:"
+msgstr ""
+
+#: foxentry-integration.php:330
+msgid "Chyba připojení"
+msgstr ""
+
+#: foxentry-integration.php:331
+msgid "Vypršel časový limit"
+msgstr ""
+
+#: foxentry-integration.php:332
+msgid "Neznámý typ validace"
+msgstr ""
+
+#: foxentry-integration.php:333
+msgid "Neplatný formát"
+msgstr ""
+
+#: foxentry-integration.php:110
+msgid "Návod k aktivaci Foxentry:"
+msgstr ""
+
+#: foxentry-integration.php:112
+msgid "Přihlaste se do svého Foxentry účtu"
+msgstr ""
+
+#: foxentry-integration.php:113
+msgid "V dashboardu klikněte na váš projekt"
+msgstr ""
+
+#: foxentry-integration.php:114
+msgid "V levém menu klikněte na \"Integrace\""
+msgstr ""
+
+#: foxentry-integration.php:115
+msgid "V sekci \"Vložení kódu do stránek\" zkopírujte kód z levé části"
+msgstr ""
+
+#: foxentry-integration.php:116
+msgid "Vložte zkopírovaný kód do pole níže"
+msgstr ""
+
+#: foxentry-integration.php:118
+msgid "Tip:"
+msgstr ""
+
+#: foxentry-integration.php:118
+msgid "Kód vypadá podobně jako YC8qjBWpzq a najdete ho v části \"Vložení kódu do stránek\" → levá strana obrazovky"
+msgstr ""
+
+#: foxentry-integration.php:137
+msgid "Foxentry Kód"
+msgstr ""
+
+#: foxentry-integration.php:140
+msgid "Vložte váš Foxentry integrační kód ze sekce Integrace"
+msgstr ""
+
+#: foxentry-integration.php:162
+msgid "Test Foxentry kódu:"
+msgstr ""
+
+#: foxentry-integration.php:163
+msgid "Otestovat Foxentry kód"
+msgstr ""
+
+#: foxentry-integration.php:174
+msgid "Kontrola frontendu:"
+msgstr ""
+
+#: foxentry-integration.php:175
+msgid "Zkontrolovat, zda je kód na frontendu"
+msgstr ""
+
+#: foxentry-integration.php:199
+msgid "Kontroluji..."
+msgstr ""
+
+#: foxentry-integration.php:206
+msgid "Foxentry kód je správně vložen na frontendu!"
+msgstr ""
+
+#: foxentry-integration.php:245
+msgid "Foxentry kód není nastaven"
+msgstr ""
+
+#: foxentry-integration.php:370
+msgid "Foxentry kód je platný!"
+msgstr ""
+
+#: foxentry-integration.php:372
+msgid "Foxentry kód není platný - zkontrolujte vložený kód"
+msgstr ""
+
+#: foxentry-integration.php:453
+msgid "Foxentry kód není nastaven"
+msgstr ""
+
+#: foxentry-integration.php:461
+msgid "Foxentry kód není platný"
+msgstr ""
+
+#: foxentry-integration.php:477
+msgid "Nelze načíst frontend stránku: "
+msgstr ""
+
+#: foxentry-integration.php:502
+msgid "Foxentry kód je správně vložen na frontendu!"
+msgstr ""
+
+#: foxentry-integration.php:507
+msgid "Foxentry kód nebyl nalezen na frontendu. Možné příčiny: 1) Téma nepoužívá wp_footer hook, 2) Kód byl odstraněn jiným pluginem, 3) Cache problém"
+msgstr ""
