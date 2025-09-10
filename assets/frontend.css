@@ -5,6 +5,67 @@
     margin-bottom: 20px;
 }
 
+.foxentry-form {
+    background: #ffffff;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.foxentry-field-wrapper {
+    margin-bottom: 15px;
+}
+
+.foxentry-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.foxentry-submit-btn {
+    background: #007cba;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.foxentry-submit-btn:hover:not(:disabled) {
+    background: #005a87;
+    transform: translateY(-1px);
+}
+
+.foxentry-submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.foxentry-form-status {
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 20px;
+}
+
+.foxentry-form-status.success {
+    color: #28a745;
+}
+
+.foxentry-form-status.error {
+    color: #dc3545;
+}
+
+.foxentry-form-status.loading {
+    color: #f39c12;
+}
+
 .foxentry-validator {
     width: 100%;
     padding: 12px 16px;

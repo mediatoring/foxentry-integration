@@ -33,8 +33,7 @@ define('FOXENTRY_AFFILIATE_CODE', 'or8eaq');
  */
 class FoxentryIntegration {
     
-    private $foxentry_code;
-    private $code_injected = false;
+    private $api_key;
     
     public function __construct() {
         add_action('init', array($this, 'init'));
@@ -47,7 +46,7 @@ class FoxentryIntegration {
         load_plugin_textdomain('foxentry-integration', false, dirname(plugin_basename(__FILE__)) . '/languages');
         
         // Načtení nastavení
-        $this->foxentry_code = get_option('foxentry_code', '');
+        $this->api_key = get_option('foxentry_api_key', '');
         
         // Přidání admin menu
         add_action('admin_menu', array($this, 'admin_menu'));
@@ -60,22 +59,16 @@ class FoxentryIntegration {
         // AJAX akce
         add_action('wp_ajax_foxentry_validate', array($this, 'ajax_validate'));
         add_action('wp_ajax_nopriv_foxentry_validate', array($this, 'ajax_validate'));
-        add_action('wp_ajax_foxentry_test_code', array($this, 'ajax_test_code'));
-        add_action('wp_ajax_foxentry_check_frontend', array($this, 'ajax_check_frontend'));
+        add_action('wp_ajax_foxentry_test_api', array($this, 'ajax_test_api'));
         
         // Enqueue scripts a styles
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'));
-        
-        // Zajištění vložení Foxentry kódu i bez wp_footer hook
-        add_action('wp_footer', array($this, 'inject_foxentry_code'), 999);
-        add_action('wp_print_footer_scripts', array($this, 'inject_foxentry_code'), 999);
-        add_action('wp_print_scripts', array($this, 'inject_foxentry_code'), 999);
     }
     
     public function activate() {
         // Vytvoření výchozích nastavení
-        add_option('foxentry_code', '');
+        add_option('foxentry_api_key', '');
         add_option('foxentry_affiliate_code', FOXENTRY_AFFILIATE_CODE);
         add_option('foxentry_cache_duration', 3600);
     }
@@ -96,7 +89,7 @@ class FoxentryIntegration {
     }
     
     public function admin_init() {
-        register_setting('foxentry_settings', 'foxentry_code');
+        register_setting('foxentry_settings', 'foxentry_api_key');
         register_setting('foxentry_settings', 'foxentry_cache_duration');
     }
     
@@ -109,21 +102,23 @@ class FoxentryIntegration {
                 <p>
                     <strong><?php _e('Registrace na Foxentry:', 'foxentry-integration'); ?></strong> 
                     <a href="https://app.foxentry.com/registration?aff=<?php echo FOXENTRY_AFFILIATE_CODE; ?>" target="_blank">
-                        <?php _e('Zaregistrujte se zde pro získání Foxentry kódu', 'foxentry-integration'); ?>
+                        <?php _e('Zaregistrujte se zde pro získání API klíče', 'foxentry-integration'); ?>
                     </a>
                 </p>
             </div>
             
             <div class="notice notice-warning">
-                <h3><?php _e('Návod k aktivaci Foxentry:', 'foxentry-integration'); ?></h3>
+                <h3><?php _e('Návod k získání API klíče:', 'foxentry-integration'); ?></h3>
                 <ol>
                     <li><?php _e('Přihlaste se do svého Foxentry účtu', 'foxentry-integration'); ?></li>
                     <li><?php _e('V dashboardu klikněte na váš projekt', 'foxentry-integration'); ?></li>
-                    <li><?php _e('V levém menu klikněte na "Integrace"', 'foxentry-integration'); ?></li>
-                    <li><?php _e('V sekci "Vložení kódu do stránek" zkopírujte kód z levé části', 'foxentry-integration'); ?></li>
-                    <li><?php _e('Vložte zkopírovaný kód do pole níže', 'foxentry-integration'); ?></li>
+                    <li><?php _e('Přejděte do sekce "Nastavení"', 'foxentry-integration'); ?></li>
+                    <li><?php _e('Klikněte na "API klíče"', 'foxentry-integration'); ?></li>
+                    <li><?php _e('Klikněte na "Vytvořit API klíč"', 'foxentry-integration'); ?></li>
+                    <li><?php _e('Zkopírujte vygenerovaný API klíč', 'foxentry-integration'); ?></li>
+                    <li><?php _e('Vložte API klíč do pole níže', 'foxentry-integration'); ?></li>
                 </ol>
-                <p><strong><?php _e('Tip:', 'foxentry-integration'); ?></strong> <?php _e('Kód vypadá podobně jako YC8qjBWpzq a najdete ho v části "Vložení kódu do stránek" → levá strana obrazovky', 'foxentry-integration'); ?></p>
+                <p><strong><?php _e('Tip:', 'foxentry-integration'); ?></strong> <?php _e('API klíč vypadá podobně jako "fox_1234567890abcdef" a najdete ho v sekci API klíče', 'foxentry-integration'); ?></p>
             </div>
             
             <div class="notice notice-success" style="border-left-color: #7c3aed;">
@@ -142,10 +137,10 @@ class FoxentryIntegration {
                 
                 <table class="form-table">
                     <tr>
-                        <th scope="row"><?php _e('Foxentry Kód', 'foxentry-integration'); ?></th>
+                        <th scope="row"><?php _e('API Klíč', 'foxentry-integration'); ?></th>
                         <td>
-                            <textarea name="foxentry_code" rows="8" cols="80" class="large-text code"><?php echo esc_textarea(get_option('foxentry_code')); ?></textarea>
-                            <p class="description"><?php _e('Vložte váš Foxentry integrační kód ze sekce Integrace', 'foxentry-integration'); ?></p>
+                            <input type="password" name="foxentry_api_key" value="<?php echo esc_attr(get_option('foxentry_api_key')); ?>" class="regular-text" />
+                            <p class="description"><?php _e('Vložte váš Foxentry API klíč ze sekce Nastavení > API klíče', 'foxentry-integration'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -167,46 +162,26 @@ class FoxentryIntegration {
             <p><code>[foxentry_validator type="address"]</code> - <?php _e('Validátor adresy', 'foxentry-integration'); ?></p>
             <p><code>[foxentry_promo]</code> - <?php _e('Propagační banner', 'foxentry-integration'); ?></p>
             
-            <h3><?php _e('Test Foxentry kódu:', 'foxentry-integration'); ?></h3>
-            <button type="button" id="test-foxentry" class="button"><?php _e('Otestovat Foxentry kód', 'foxentry-integration'); ?></button>
-            <div id="foxentry-test-result"></div>
-            
-            <h3><?php _e('Kontrola frontendu:', 'foxentry-integration'); ?></h3>
-            <button type="button" id="check-frontend" class="button button-secondary"><?php _e('Zkontrolovat, zda je kód na frontendu', 'foxentry-integration'); ?></button>
-            <div id="frontend-check-result"></div>
+            <h3><?php _e('Test API klíče:', 'foxentry-integration'); ?></h3>
+            <button type="button" id="test-api" class="button"><?php _e('Otestovat API klíč', 'foxentry-integration'); ?></button>
+            <div id="api-test-result"></div>
         </div>
         
         <script>
         jQuery(document).ready(function($) {
-            $('#test-foxentry').click(function() {
+            $('#test-api').click(function() {
                 var button = $(this);
                 button.prop('disabled', true).text('<?php _e('Testování...', 'foxentry-integration'); ?>');
                 
                 $.post(ajaxurl, {
-                    action: 'foxentry_test_code',
+                    action: 'foxentry_test_api',
                     nonce: '<?php echo wp_create_nonce('foxentry_test'); ?>'
                 }, function(response) {
-                    $('#foxentry-test-result').html(response.success ? 
-                        '<div class="notice notice-success"><p><?php _e('Foxentry kód je platný!', 'foxentry-integration'); ?></p></div>' : 
+                    $('#api-test-result').html(response.success ? 
+                        '<div class="notice notice-success"><p><?php _e('API klíč je platný!', 'foxentry-integration'); ?></p></div>' : 
                         '<div class="notice notice-error"><p><?php _e('Chyba:', 'foxentry-integration'); ?> ' + response.data + '</p></div>'
                     );
-                    button.prop('disabled', false).text('<?php _e('Otestovat Foxentry kód', 'foxentry-integration'); ?>');
-                });
-            });
-            
-            $('#check-frontend').click(function() {
-                var button = $(this);
-                button.prop('disabled', true).text('<?php _e('Kontroluji...', 'foxentry-integration'); ?>');
-                
-                $.post(ajaxurl, {
-                    action: 'foxentry_check_frontend',
-                    nonce: '<?php echo wp_create_nonce('foxentry_test'); ?>'
-                }, function(response) {
-                    $('#frontend-check-result').html(response.success ? 
-                        '<div class="notice notice-success"><p><?php _e('Foxentry kód je správně vložen na frontendu!', 'foxentry-integration'); ?></p></div>' : 
-                        '<div class="notice notice-error"><p><?php _e('Chyba:', 'foxentry-integration'); ?> ' + response.data + '</p></div>'
-                    );
-                    button.prop('disabled', false).text('<?php _e('Zkontrolovat, zda je kód na frontendu', 'foxentry-integration'); ?>');
+                    button.prop('disabled', false).text('<?php _e('Otestovat API klíč', 'foxentry-integration'); ?>');
                 });
             });
         });
@@ -218,21 +193,39 @@ class FoxentryIntegration {
         $atts = shortcode_atts(array(
             'type' => 'email',
             'placeholder' => '',
-            'class' => 'foxentry-validator'
+            'class' => 'foxentry-validator',
+            'form_action' => '',
+            'submit_text' => '',
+            'required' => 'true'
         ), $atts);
         
         $placeholder = $atts['placeholder'] ?: $this->get_default_placeholder($atts['type']);
         $unique_id = 'foxentry_' . uniqid();
+        $form_action = $atts['form_action'] ?: '#';
+        $submit_text = $atts['submit_text'] ?: __('Odeslat', 'foxentry-integration');
+        $required = $atts['required'] === 'true' ? 'required' : '';
         
         ob_start();
         ?>
         <div class="foxentry-wrapper">
-            <input type="text" 
-                   id="<?php echo $unique_id; ?>" 
-                   class="<?php echo esc_attr($atts['class']); ?>" 
-                   data-type="<?php echo esc_attr($atts['type']); ?>"
-                   placeholder="<?php echo esc_attr($placeholder); ?>" />
-            <div class="foxentry-result" id="<?php echo $unique_id; ?>_result"></div>
+            <form class="foxentry-form" id="<?php echo $unique_id; ?>_form" action="<?php echo esc_url($form_action); ?>" method="post">
+                <div class="foxentry-field-wrapper">
+                    <input type="text" 
+                           id="<?php echo $unique_id; ?>" 
+                           name="foxentry_<?php echo esc_attr($atts['type']); ?>"
+                           class="<?php echo esc_attr($atts['class']); ?>" 
+                           data-type="<?php echo esc_attr($atts['type']); ?>"
+                           placeholder="<?php echo esc_attr($placeholder); ?>"
+                           <?php echo $required; ?> />
+                    <div class="foxentry-result" id="<?php echo $unique_id; ?>_result"></div>
+                </div>
+                <div class="foxentry-form-actions">
+                    <button type="submit" class="foxentry-submit-btn" disabled>
+                        <?php echo esc_html($submit_text); ?>
+                    </button>
+                    <div class="foxentry-form-status" id="<?php echo $unique_id; ?>_status"></div>
+                </div>
+            </form>
         </div>
         <?php
         return ob_get_clean();
@@ -268,8 +261,8 @@ class FoxentryIntegration {
         $value = sanitize_text_field($_POST['value']);
         $type = sanitize_text_field($_POST['type']);
         
-        if (empty($this->foxentry_code)) {
-            wp_send_json_error(__('Foxentry kód není nastaven', 'foxentry-integration'));
+        if (empty($this->api_key)) {
+            wp_send_json_error(__('API klíč není nastaven', 'foxentry-integration'));
         }
         
         // Kontrola cache
@@ -280,8 +273,8 @@ class FoxentryIntegration {
             wp_send_json_success($cached_result);
         }
         
-        // Foxentry validace pomocí JavaScript API
-        $result = $this->validate_with_foxentry($type, $value);
+        // Foxentry validace pomocí REST API
+        $result = $this->validate_with_foxentry_api($type, $value);
         
         if ($result) {
             // Uložení do cache
@@ -293,31 +286,115 @@ class FoxentryIntegration {
         }
     }
     
-    private function validate_with_foxentry($type, $value) {
-        // Foxentry validace se provádí na frontendu pomocí JavaScript API
-        // Tato metoda pouze vrací základní strukturu pro frontend
-        return array(
-            'valid' => true, // Bude nastaveno na frontendu
-            'message' => '',
-            'type' => $type,
-            'value' => $value
+    private function validate_with_foxentry_api($type, $value) {
+        $endpoints = array(
+            'email' => 'https://api.foxentry.com/email/validate',
+            'phone' => 'https://api.foxentry.com/phone/validate',
+            'address' => 'https://api.foxentry.com/location/validate'
         );
-    }
-    
-    private function extract_foxentry_code() {
-        // Extrahuje Foxentry kód z vloženého HTML kódu
-        $code = get_option('foxentry_code', '');
         
-        if (empty($code)) {
+        if (!isset($endpoints[$type])) {
             return false;
         }
         
-        // Hledá Foxentry kód v HTML
-        if (preg_match("/FoxentryBase\('([^']+)'\)/", $code, $matches)) {
-            return $matches[1];
+        $request_data = array(
+            'request' => array(
+                'query' => array(
+                    $type => $value
+                ),
+                'options' => array(
+                    'validationType' => 'extended'
+                )
+            )
+        );
+        
+        $response = wp_remote_post($endpoints[$type], array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->api_key,
+                'Api-Version' => '2.0',
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ),
+            'body' => json_encode($request_data),
+            'timeout' => 10
+        ));
+        
+        if (is_wp_error($response)) {
+            return false;
         }
         
-        return false;
+        $status_code = wp_remote_retrieve_response_code($response);
+        if ($status_code !== 200) {
+            return false;
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        
+        if (!$data || !isset($data['response']['result'])) {
+            return false;
+        }
+        
+        return $this->parse_foxentry_response($data['response'], $type);
+    }
+    
+    private function parse_foxentry_response($response, $type) {
+        $result = $response['result'];
+        $is_valid = $result['isValid'];
+        $proposal = $result['proposal'];
+        
+        // Zpracování opravených dat
+        $corrected_data = null;
+        if (isset($response['resultCorrected']) && $response['resultCorrected']['isValid']) {
+            $corrected_data = $response['resultCorrected']['data'];
+        }
+        
+        // Zpracování návrhů
+        $suggestions = array();
+        if (isset($response['suggestions']) && !empty($response['suggestions'])) {
+            foreach ($response['suggestions'] as $suggestion) {
+                $suggestions[] = $suggestion['data'];
+            }
+        }
+        
+        // Vytvoření zprávy
+        $message = $this->create_validation_message($is_valid, $proposal, $corrected_data, $suggestions, $type);
+        
+        return array(
+            'isValid' => $is_valid,
+            'message' => $message,
+            'correctedData' => $corrected_data,
+            'suggestions' => $suggestions,
+            'proposal' => $proposal
+        );
+    }
+    
+    private function create_validation_message($is_valid, $proposal, $corrected_data, $suggestions, $type) {
+        switch ($proposal) {
+            case 'valid':
+                return sprintf(__('%s je platný', 'foxentry-integration'), ucfirst($type));
+                
+            case 'invalid':
+                return sprintf(__('%s není platný', 'foxentry-integration'), ucfirst($type));
+                
+            case 'validWithSuggestion':
+                $message = sprintf(__('%s je platný', 'foxentry-integration'), ucfirst($type));
+                if (!empty($suggestions)) {
+                    $message .= ' ' . __('Doporučujeme:', 'foxentry-integration') . ' ' . implode(', ', array_column($suggestions, $type));
+                }
+                return $message;
+                
+            case 'invalidWithCorrection':
+                if ($corrected_data) {
+                    return sprintf(__('%s opraveno na: %s', 'foxentry-integration'), ucfirst($type), $corrected_data[$type]);
+                }
+                return sprintf(__('%s není platný', 'foxentry-integration'), ucfirst($type));
+                
+            default:
+                return $is_valid ? 
+                    sprintf(__('%s je platný', 'foxentry-integration'), ucfirst($type)) : 
+                    sprintf(__('%s není platný', 'foxentry-integration'), ucfirst($type));
+        }
     }
     
     private function get_default_placeholder($type) {
@@ -331,7 +408,6 @@ class FoxentryIntegration {
     }
     
     public function enqueue_scripts() {
-        
         wp_enqueue_script('jquery');
         wp_enqueue_script(
             'foxentry-frontend',
@@ -344,7 +420,6 @@ class FoxentryIntegration {
         wp_localize_script('foxentry-frontend', 'foxentry_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('foxentry_validate'),
-            'foxentry_code' => $this->extract_foxentry_code(),
             'messages' => array(
                 'validating' => __('Ověřuji...', 'foxentry-integration'),
                 'email_valid' => __('Email je platný', 'foxentry-integration'),
@@ -360,7 +435,12 @@ class FoxentryIntegration {
                 'connection_error' => __('Chyba připojení', 'foxentry-integration'),
                 'timeout_error' => __('Vypršel časový limit', 'foxentry-integration'),
                 'unknown_type' => __('Neznámý typ validace', 'foxentry-integration'),
-                'invalid_format' => __('Neplatný formát', 'foxentry-integration')
+                'invalid_format' => __('Neplatný formát', 'foxentry-integration'),
+                'submitting' => __('Odesílám...', 'foxentry-integration'),
+                'processing' => __('Zpracovávám...', 'foxentry-integration'),
+                'submitted' => __('Odesláno', 'foxentry-integration'),
+                'submit' => __('Odeslat', 'foxentry-integration'),
+                'invalid_data' => __('Neplatná data', 'foxentry-integration')
             )
         ));
         
@@ -372,30 +452,6 @@ class FoxentryIntegration {
         );
     }
     
-    public function inject_foxentry_code() {
-        // Zamezení duplicitního vkládání
-        if ($this->code_injected) {
-            return;
-        }
-        
-        $foxentry_code = get_option('foxentry_code', '');
-        if (empty($foxentry_code)) {
-            return;
-        }
-        
-        // Ověření, že kód obsahuje Foxentry script
-        if (strpos($foxentry_code, 'foxentry.cz') === false && strpos($foxentry_code, 'FoxentryBase') === false) {
-            return;
-        }
-        
-        // Vložení kódu s bezpečnostními opatřeními
-        echo "\n<!-- Foxentry Integration Plugin - Auto injected -->\n";
-        echo $foxentry_code;
-        echo "\n<!-- End Foxentry Integration -->\n";
-        
-        $this->code_injected = true;
-    }
-    
     public function admin_enqueue_scripts($hook) {
         if ($hook !== 'settings_page_foxentry-settings') {
             return;
@@ -403,11 +459,11 @@ class FoxentryIntegration {
         
         wp_enqueue_script('jquery');
         
-        // Test Foxentry kódu AJAX
-        add_action('wp_ajax_foxentry_test_code', array($this, 'ajax_test_code'));
+        // Test API AJAX
+        add_action('wp_ajax_foxentry_test_api', array($this, 'ajax_test_api'));
     }
     
-    public function ajax_test_code() {
+    public function ajax_test_api() {
         if (!wp_verify_nonce($_POST['nonce'], 'foxentry_test')) {
             wp_die(__('Bezpečnostní chyba', 'foxentry-integration'));
         }
@@ -416,98 +472,20 @@ class FoxentryIntegration {
             wp_die(__('Nedostatečná oprávnění', 'foxentry-integration'));
         }
         
-        $foxentry_code = $this->extract_foxentry_code();
+        if (empty($this->api_key)) {
+            wp_send_json_error(__('API klíč není nastaven', 'foxentry-integration'));
+        }
         
-        if ($foxentry_code) {
-            wp_send_json_success(__('Foxentry kód je platný!', 'foxentry-integration'));
+        // Test API s jednoduchým emailem
+        $test_result = $this->validate_with_foxentry_api('email', 'test@example.com');
+        
+        if ($test_result) {
+            wp_send_json_success(__('API klíč je platný!', 'foxentry-integration'));
         } else {
-            wp_send_json_error(__('Foxentry kód není platný - zkontrolujte vložený kód', 'foxentry-integration'));
+            wp_send_json_error(__('API klíč není platný - zkontrolujte vložený klíč', 'foxentry-integration'));
         }
     }
     
-    public function ajax_check_frontend() {
-        if (!wp_verify_nonce($_POST['nonce'], 'foxentry_test')) {
-            wp_die(__('Bezpečnostní chyba', 'foxentry-integration'));
-        }
-        
-        if (!current_user_can('manage_options')) {
-            wp_die(__('Nedostatečná oprávnění', 'foxentry-integration'));
-        }
-        
-        $result = $this->check_frontend_injection();
-        
-        if ($result['success']) {
-            wp_send_json_success($result['message']);
-        } else {
-            wp_send_json_error($result['message']);
-        }
-    }
-    
-    private function check_frontend_injection() {
-        $foxentry_code = get_option('foxentry_code', '');
-        
-        if (empty($foxentry_code)) {
-            return array(
-                'success' => false,
-                'message' => __('Foxentry kód není nastaven', 'foxentry-integration')
-            );
-        }
-        
-        // Extrahujeme Foxentry kód z uloženého HTML
-        $extracted_code = $this->extract_foxentry_code();
-        if (!$extracted_code) {
-            return array(
-                'success' => false,
-                'message' => __('Foxentry kód není platný', 'foxentry-integration')
-            );
-        }
-        
-        // Získáme URL domovské stránky
-        $home_url = home_url('/');
-        
-        // Simulujeme požadavek na frontend
-        $response = wp_remote_get($home_url, array(
-            'timeout' => 10,
-            'user-agent' => 'Foxentry Integration Plugin Check'
-        ));
-        
-        if (is_wp_error($response)) {
-            return array(
-                'success' => false,
-                'message' => __('Nelze načíst frontend stránku: ', 'foxentry-integration') . $response->get_error_message()
-            );
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        
-        // Kontrola, zda se Foxentry kód nachází v HTML
-        $foxentry_found = false;
-        $checks = array(
-            'foxentry.cz',
-            'FoxentryBase',
-            'Foxentry Integration Plugin - Auto injected',
-            $extracted_code
-        );
-        
-        foreach ($checks as $check) {
-            if (strpos($body, $check) !== false) {
-                $foxentry_found = true;
-                break;
-            }
-        }
-        
-        if ($foxentry_found) {
-            return array(
-                'success' => true,
-                'message' => __('Foxentry kód je správně vložen na frontendu!', 'foxentry-integration')
-            );
-        } else {
-            return array(
-                'success' => false,
-                'message' => __('Foxentry kód nebyl nalezen na frontendu. Možné příčiny: 1) Téma nepoužívá wp_footer hook, 2) Kód byl odstraněn jiným pluginem, 3) Cache problém', 'foxentry-integration')
-            );
-        }
-    }
 }
 
 // Spuštění pluginu
@@ -520,3 +498,4 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), function($links) 
     return $links;
 });
 ?>
+

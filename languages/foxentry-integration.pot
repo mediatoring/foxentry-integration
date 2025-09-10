@@ -299,3 +299,107 @@ msgstr ""
 #: foxentry-integration.php:507
 msgid "Foxentry kód nebyl nalezen na frontendu. Možné příčiny: 1) Téma nepoužívá wp_footer hook, 2) Kód byl odstraněn jiným pluginem, 3) Cache problém"
 msgstr ""
+
+#: foxentry-integration.php:230
+msgid "Odeslat"
+msgstr ""
+
+#: foxentry-integration.php:382
+msgid "Odesílám..."
+msgstr ""
+
+#: foxentry-integration.php:383
+msgid "Zpracovávám..."
+msgstr ""
+
+#: foxentry-integration.php:384
+msgid "Odesláno"
+msgstr ""
+
+#: foxentry-integration.php:385
+msgid "Odeslat"
+msgstr ""
+
+#: foxentry-integration.php:386
+msgid "Neplatná data"
+msgstr ""
+
+#: foxentry-integration.php:112
+msgid "Zaregistrujte se zde pro získání API klíče"
+msgstr ""
+
+#: foxentry-integration.php:117
+msgid "Návod k získání API klíče:"
+msgstr ""
+
+#: foxentry-integration.php:119
+msgid "Přejděte do sekce \"Nastavení\""
+msgstr ""
+
+#: foxentry-integration.php:120
+msgid "Klikněte na \"API klíče\""
+msgstr ""
+
+#: foxentry-integration.php:121
+msgid "Klikněte na \"Vytvořit API klíč\""
+msgstr ""
+
+#: foxentry-integration.php:122
+msgid "Zkopírujte vygenerovaný API klíč"
+msgstr ""
+
+#: foxentry-integration.php:123
+msgid "Vložte API klíč do pole níže"
+msgstr ""
+
+#: foxentry-integration.php:127
+msgid "API klíč vypadá podobně jako \"fox_1234567890abcdef\" a najdete ho v sekci API klíče"
+msgstr ""
+
+#: foxentry-integration.php:147
+msgid "API Klíč"
+msgstr ""
+
+#: foxentry-integration.php:149
+msgid "Vložte váš Foxentry API klíč ze sekce Nastavení > API klíče"
+msgstr ""
+
+#: foxentry-integration.php:172
+msgid "Test API klíče:"
+msgstr ""
+
+#: foxentry-integration.php:173
+msgid "Otestovat API klíč"
+msgstr ""
+
+#: foxentry-integration.php:187
+msgid "API klíč je platný!"
+msgstr ""
+
+#: foxentry-integration.php:190
+msgid "Otestovat API klíč"
+msgstr ""
+
+#: foxentry-integration.php:265
+msgid "API klíč není nastaven"
+msgstr ""
+
+#: foxentry-integration.php:501
+msgid "API klíč není nastaven"
+msgstr ""
+
+#: foxentry-integration.php:509
+msgid "API klíč je platný!"
+msgstr ""
+
+#: foxentry-integration.php:511
+msgid "API klíč není platný - zkontrolujte vložený klíč"
+msgstr ""
+
+#: foxentry-integration.php:375
+msgid "Doporučujeme:"
+msgstr ""
+
+#: foxentry-integration.php:389
+msgid "opraveno na:"
+msgstr ""

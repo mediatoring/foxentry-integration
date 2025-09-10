@@ -29,6 +29,8 @@
                 var inputId = $input.attr('id');
                 var value = $input.val().trim();
                 var type = $input.data('type');
+                var $form = $input.closest('.foxentry-form');
+                var $submitBtn = $form.find('.foxentry-submit-btn');
                 
                 // Vyčištění předchozího timeoutu
                 if (self.timeouts[inputId]) {
@@ -38,13 +40,20 @@
                 // Reset stylů pokud je pole prázdné
                 if (value === '') {
                     self.resetValidation($input);
+                    self.updateSubmitButton($submitBtn, false);
                     return;
                 }
                 
-                // Debounce - validace až po 500ms od posledního zadání
+                // Kontrola, zda je hodnota dostatečně dlouhá pro validaci
+                if (!self.isValueComplete(value, type)) {
+                    self.updateSubmitButton($submitBtn, false);
+                    return;
+                }
+                
+                // Debounce - validace až po 800ms od posledního zadání (delší pro lepší UX)
                 self.timeouts[inputId] = setTimeout(function() {
                     self.validateField($input, value, type);
-                }, 500);
+                }, 800);
             });
             
             // Validace při focus out
@@ -52,15 +61,34 @@
                 var $input = $(this);
                 var value = $input.val().trim();
                 var type = $input.data('type');
+                var $form = $input.closest('.foxentry-form');
+                var $submitBtn = $form.find('.foxentry-submit-btn');
                 
-                if (value !== '') {
+                if (value !== '' && self.isValueComplete(value, type)) {
                     // Vyčistí timeout a validuje okamžitě
                     var inputId = $input.attr('id');
                     if (self.timeouts[inputId]) {
                         clearTimeout(self.timeouts[inputId]);
                     }
                     self.validateField($input, value, type);
+                } else {
+                    self.updateSubmitButton($submitBtn, false);
                 }
+            });
+            
+            // Submit formuláře
+            $(document).on('submit', '.foxentry-form', function(e) {
+                e.preventDefault();
+                var $form = $(this);
+                var $input = $form.find('.foxentry-validator');
+                var $submitBtn = $form.find('.foxentry-submit-btn');
+                var $status = $form.find('.foxentry-form-status');
+                
+                if ($submitBtn.prop('disabled')) {
+                    return false;
+                }
+                
+                self.handleFormSubmit($form, $input, $submitBtn, $status);
             });
         },
         
@@ -157,15 +185,68 @@
         
         // Zobrazení výsledku
         showResult: function($input, $result, result) {
+            var $form = $input.closest('.foxentry-form');
+            var $submitBtn = $form.find('.foxentry-submit-btn');
+            
             $input.removeClass('validating');
             
             if (result.isValid) {
                 $input.removeClass('invalid').addClass('valid');
                 $result.removeClass('invalid loading').addClass('valid').text(result.message);
+                this.updateSubmitButton($submitBtn, true);
             } else {
                 $input.removeClass('valid').addClass('invalid');
                 $result.removeClass('valid loading').addClass('invalid').text(result.message);
+                this.updateSubmitButton($submitBtn, false);
             }
+        },
+        
+        // Kontrola, zda je hodnota dostatečně kompletní pro validaci
+        isValueComplete: function(value, type) {
+            switch (type) {
+                case 'email':
+                    // Email musí obsahovat @ a alespoň 5 znaků
+                    return value.length >= 5 && value.includes('@');
+                case 'phone':
+                    // Telefon musí obsahovat alespoň 8 znaků a nějaká čísla
+                    return value.length >= 8 && /\d/.test(value);
+                case 'address':
+                    // Adresa musí být alespoň 10 znaků dlouhá
+                    return value.length >= 10;
+                default:
+                    return value.length >= 3;
+            }
+        },
+        
+        // Aktualizace stavu submit tlačítka
+        updateSubmitButton: function($submitBtn, isValid) {
+            if (isValid) {
+                $submitBtn.prop('disabled', false).removeClass('disabled');
+            } else {
+                $submitBtn.prop('disabled', true).addClass('disabled');
+            }
+        },
+        
+        // Zpracování odeslání formuláře
+        handleFormSubmit: function($form, $input, $submitBtn, $status) {
+            var self = this;
+            var value = $input.val().trim();
+            var type = $input.data('type');
+            
+            // Zobrazení loading stavu
+            $submitBtn.prop('disabled', true).text(foxentry_ajax.messages.submitting || 'Odesílám...');
+            $status.removeClass('success error').addClass('loading').text(foxentry_ajax.messages.processing || 'Zpracovávám...');
+            
+            // Simulace odeslání (můžete nahradit skutečným AJAX voláním)
+            setTimeout(function() {
+                if (value && self.isValueComplete(value, type)) {
+                    $status.removeClass('loading').addClass('success').text(foxentry_ajax.messages.submitted || 'Formulář byl úspěšně odeslán!');
+                    $submitBtn.text(foxentry_ajax.messages.submitted || 'Odesláno');
+                } else {
+                    $status.removeClass('loading').addClass('error').text(foxentry_ajax.messages.invalid_data || 'Neplatná data');
+                    $submitBtn.prop('disabled', false).text(foxentry_ajax.messages.submit || 'Odeslat');
+                }
+            }, 1500);
         },
         
         // Parsování odpovědi z API
