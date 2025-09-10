@@ -107,18 +107,121 @@ class FoxentryIntegration {
                 </p>
             </div>
             
-            <div class="notice notice-warning">
-                <h3><?php _e('Návod k získání API klíče:', 'foxentry-integration'); ?></h3>
-                <ol>
-                    <li><?php _e('Přihlaste se do svého Foxentry účtu', 'foxentry-integration'); ?></li>
-                    <li><?php _e('V dashboardu klikněte na váš projekt', 'foxentry-integration'); ?></li>
-                    <li><?php _e('Přejděte do sekce "Nastavení"', 'foxentry-integration'); ?></li>
-                    <li><?php _e('Klikněte na "API klíče"', 'foxentry-integration'); ?></li>
-                    <li><?php _e('Klikněte na "Vytvořit API klíč"', 'foxentry-integration'); ?></li>
-                    <li><?php _e('Zkopírujte vygenerovaný API klíč', 'foxentry-integration'); ?></li>
-                    <li><?php _e('Vložte API klíč do pole níže', 'foxentry-integration'); ?></li>
-                </ol>
-                <p><strong><?php _e('Tip:', 'foxentry-integration'); ?></strong> <?php _e('API klíč vypadá podobně jako "fox_1234567890abcdef" a najdete ho v sekci API klíče', 'foxentry-integration'); ?></p>
+            <!-- Vizuální průvodce pro získání API klíče -->
+            <div class="foxentry-api-guide" id="foxentry-guide">
+                <div class="guide-header">
+                    <h2><?php _e('📋 Jak získat API klíč - Vizuální průvodce', 'foxentry-integration'); ?></h2>
+                    <p><?php _e('Následujte tyto kroky pro získání vašeho Foxentry API klíče:', 'foxentry-integration'); ?></p>
+                    <div class="guide-controls">
+                        <button type="button" id="toggle-guide" class="guide-toggle-btn">
+                            <span class="toggle-text"><?php _e('Skrýt průvodce', 'foxentry-integration'); ?></span>
+                            <span class="toggle-icon">▼</span>
+                        </button>
+                        <button type="button" id="reset-guide" class="guide-reset-btn">
+                            <?php _e('🔄 Obnovit', 'foxentry-integration'); ?>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="guide-steps">
+                    <!-- Krok 1: Registrace -->
+                    <div class="guide-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3><?php _e('Registrace na Foxentry', 'foxentry-integration'); ?></h3>
+                            <p><?php _e('Nejdříve se zaregistrujte na Foxentry, pokud ještě nemáte účet.', 'foxentry-integration'); ?></p>
+                            <a href="https://app.foxentry.com/registration?aff=<?php echo FOXENTRY_AFFILIATE_CODE; ?>" target="_blank" class="guide-button">
+                                <?php _e('Zaregistrovat se', 'foxentry-integration'); ?>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Krok 2: Vytvoření projektu -->
+                    <div class="guide-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3><?php _e('Vytvoření nového projektu', 'foxentry-integration'); ?></h3>
+                            <p><?php _e('Po přihlášení vytvořte nový projekt a pokračujte do třetího kroku.', 'foxentry-integration'); ?></p>
+                            <a href="https://app.foxentry.com/projects/creator" target="_blank" class="guide-button">
+                                <?php _e('Vytvořit projekt', 'foxentry-integration'); ?>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Krok 3: Výběr typu projektu -->
+                    <div class="guide-step critical-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3><?php _e('⚠️ DŮLEŽITÉ: Výběr typu projektu', 'foxentry-integration'); ?></h3>
+                            <p><?php _e('Ve třetím kroku při vytváření projektu MUSÍTE vybrat "Aplikace" místo "Webová stránka"!', 'foxentry-integration'); ?></p>
+                            <div class="step-image">
+                                <img src="<?php echo FOXENTRY_PLUGIN_URL; ?>assets/api01.png" alt="<?php _e('Výběr typu projektu - Aplikace', 'foxentry-integration'); ?>" />
+                                <div class="image-caption">
+                                    <?php _e('Vyberte "Aplikace" pro získání přístupu k API klíčům', 'foxentry-integration'); ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Krok 4: Dokončení projektu -->
+                    <div class="guide-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3><?php _e('Dokončení projektu', 'foxentry-integration'); ?></h3>
+                            <p><?php _e('Dokončete vytváření projektu a pokračujte do administrace.', 'foxentry-integration'); ?></p>
+                            <div class="step-image">
+                                <img src="<?php echo FOXENTRY_PLUGIN_URL; ?>assets/api02.png" alt="<?php _e('Dokončení projektu', 'foxentry-integration'); ?>" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Krok 5: Správa API klíčů -->
+                    <div class="guide-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h3><?php _e('Přejít do správy API klíčů', 'foxentry-integration'); ?></h3>
+                            <p><?php _e('V administraci přejděte do sekce "Nastavení projektu" > "API klíče".', 'foxentry-integration'); ?></p>
+                            <div class="step-image">
+                                <img src="<?php echo FOXENTRY_PLUGIN_URL; ?>assets/api03.png" alt="<?php _e('Správa API klíčů', 'foxentry-integration'); ?>" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Krok 6: Vytvoření API klíče -->
+                    <div class="guide-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h3><?php _e('Vytvoření nového API klíče', 'foxentry-integration'); ?></h3>
+                            <p><?php _e('Klikněte na "Vytvořit API klíč" a zadejte název (např. "WordPress").', 'foxentry-integration'); ?></p>
+                            <div class="step-image">
+                                <img src="<?php echo FOXENTRY_PLUGIN_URL; ?>assets/api04.png" alt="<?php _e('Vytvoření API klíče', 'foxentry-integration'); ?>" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Krok 7: Zkopírování API klíče -->
+                    <div class="guide-step final-step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <h3><?php _e('Zkopírování API klíče', 'foxentry-integration'); ?></h3>
+                            <p><?php _e('Zkopírujte vygenerovaný API klíč a vložte ho do pole níže.', 'foxentry-integration'); ?></p>
+                            <div class="step-image">
+                                <img src="<?php echo FOXENTRY_PLUGIN_URL; ?>assets/api05.png" alt="<?php _e('Zkopírování API klíče', 'foxentry-integration'); ?>" />
+                            </div>
+                            <div class="api-key-example">
+                                <strong><?php _e('Příklad API klíče:', 'foxentry-integration'); ?></strong>
+                                <code>76R2HarteqgqnY6p6wRI</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guide-footer">
+                    <div class="success-tip">
+                        <h4><?php _e('✅ Úspěch!', 'foxentry-integration'); ?></h4>
+                        <p><?php _e('Pokud jste postupovali podle tohoto průvodce, máte nyní platný API klíč, který můžete použít v tomto pluginu.', 'foxentry-integration'); ?></p>
+                    </div>
+                </div>
             </div>
             
             <div class="notice notice-success" style="border-left-color: #7c3aed;">
@@ -169,6 +272,7 @@ class FoxentryIntegration {
         
         <script>
         jQuery(document).ready(function($) {
+            // Test API klíče
             $('#test-api').click(function() {
                 var button = $(this);
                 button.prop('disabled', true).text('<?php _e('Testování...', 'foxentry-integration'); ?>');
@@ -184,6 +288,53 @@ class FoxentryIntegration {
                     button.prop('disabled', false).text('<?php _e('Otestovat API klíč', 'foxentry-integration'); ?>');
                 });
             });
+            
+            // Interaktivní prvky průvodce
+            var guideSteps = $('#foxentry-guide .guide-steps');
+            var toggleBtn = $('#toggle-guide');
+            var resetBtn = $('#reset-guide');
+            var isVisible = true;
+            
+            // Toggle průvodce
+            toggleBtn.click(function() {
+                if (isVisible) {
+                    guideSteps.slideUp(300);
+                    toggleBtn.find('.toggle-text').text('<?php _e('Zobrazit průvodce', 'foxentry-integration'); ?>');
+                    toggleBtn.find('.toggle-icon').text('▶');
+                    isVisible = false;
+                } else {
+                    guideSteps.slideDown(300);
+                    toggleBtn.find('.toggle-text').text('<?php _e('Skrýt průvodce', 'foxentry-integration'); ?>');
+                    toggleBtn.find('.toggle-icon').text('▼');
+                    isVisible = true;
+                }
+            });
+            
+            // Reset animací
+            resetBtn.click(function() {
+                guideSteps.find('.guide-step').removeClass('animated');
+                setTimeout(function() {
+                    guideSteps.find('.guide-step').addClass('animated');
+                }, 100);
+            });
+            
+            // Smooth scroll pro kroky
+            $('.guide-step').click(function() {
+                var $this = $(this);
+                $('html, body').animate({
+                    scrollTop: $this.offset().top - 100
+                }, 500);
+            });
+            
+            // Hover efekty
+            $('.guide-step').hover(
+                function() {
+                    $(this).addClass('hover-effect');
+                },
+                function() {
+                    $(this).removeClass('hover-effect');
+                }
+            );
         });
         </script>
         <?php

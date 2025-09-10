@@ -215,3 +215,430 @@
         color: #fc8181;
     }
 }
+
+/* ===== ADMIN STRÁNKA - VIZUÁLNÍ PRŮVODCE ===== */
+
+/* Hlavní kontejner průvodce */
+.foxentry-api-guide {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 20px 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    color: white;
+}
+
+.guide-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.guide-header h2 {
+    color: white;
+    font-size: 28px;
+    margin: 0 0 10px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.guide-header p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Kroky průvodce */
+.guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.guide-step {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.guide-step:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.guide-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+/* Kritický krok - zvýraznění */
+.guide-step.critical-step {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    border: 2px solid #ff4757;
+}
+
+.critical-step::before {
+    background: linear-gradient(90deg, #ff4757, #ff6b6b);
+    height: 6px;
+}
+
+/* Finální krok */
+.guide-step.final-step {
+    background: linear-gradient(135deg, #2ed573, #1e90ff);
+    color: white;
+}
+
+.final-step::before {
+    background: linear-gradient(90deg, #1e90ff, #2ed573);
+    height: 6px;
+}
+
+/* Číslo kroku */
+.step-number {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.critical-step .step-number {
+    background: linear-gradient(135deg, #ff4757, #ff6b6b);
+    animation: pulse 2s infinite;
+}
+
+.final-step .step-number {
+    background: linear-gradient(135deg, #1e90ff, #2ed573);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Obsah kroku */
+.step-content {
+    flex: 1;
+    color: #333;
+}
+
+.critical-step .step-content,
+.final-step .step-content {
+    color: white;
+}
+
+.step-content h3 {
+    margin: 0 0 10px 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.step-content p {
+    margin: 0 0 15px 0;
+    line-height: 1.6;
+    font-size: 15px;
+}
+
+/* Tlačítka v průvodci */
+.guide-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.guide-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Obrázky v krocích */
+.step-image {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.step-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.step-image img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.image-caption {
+    margin-top: 10px;
+    font-style: italic;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* Příklad API klíče */
+.api-key-example {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 4px solid #2ed573;
+}
+
+.api-key-example code {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #fff;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+/* Footer průvodce */
+.guide-footer {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.success-tip {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.success-tip h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #2ed573;
+}
+
+.success-tip p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.9;
+}
+
+/* Responsivní design pro průvodce */
+@media (max-width: 768px) {
+    .foxentry-api-guide {
+        padding: 20px;
+        margin: 15px 0;
+    }
+    
+    .guide-header h2 {
+        font-size: 24px;
+    }
+    
+    .guide-step {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .step-number {
+        align-self: center;
+    }
+    
+    .step-image img {
+        max-width: 90%;
+    }
+}
+
+/* Animace pro lepší UX */
+.guide-step {
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Staggered animation pro kroky */
+.guide-step:nth-child(1) { animation-delay: 0.1s; }
+.guide-step:nth-child(2) { animation-delay: 0.2s; }
+.guide-step:nth-child(3) { animation-delay: 0.3s; }
+.guide-step:nth-child(4) { animation-delay: 0.4s; }
+.guide-step:nth-child(5) { animation-delay: 0.5s; }
+.guide-step:nth-child(6) { animation-delay: 0.6s; }
+.guide-step:nth-child(7) { animation-delay: 0.7s; }
+
+/* ===== INTERAKTIVNÍ PRVKY ===== */
+
+/* Ovládací prvky průvodce */
+.guide-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.guide-toggle-btn,
+.guide-reset-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-toggle-btn:hover,
+.guide-reset-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.toggle-icon {
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.guide-toggle-btn:hover .toggle-icon {
+    transform: scale(1.2);
+}
+
+/* Hover efekty pro kroky */
+.guide-step.hover-effect {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Animované kroky */
+.guide-step.animated {
+    animation: slideInUp 0.6s ease-out;
+}
+
+/* Smooth scroll indikátor */
+.guide-step {
+    cursor: pointer;
+    position: relative;
+}
+
+.guide-step::after {
+    content: '👆 Klikněte pro scroll';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.guide-step:hover::after {
+    opacity: 1;
+}
+
+/* Loading stav pro obrázky */
+.step-image img {
+    transition: opacity 0.3s ease;
+}
+
+.step-image img[src=""] {
+    opacity: 0;
+}
+
+/* Kritický krok - speciální animace */
+.critical-step {
+    position: relative;
+    overflow: hidden;
+}
+
+.critical-step::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* Finální krok - speciální efekty */
+.final-step {
+    position: relative;
+}
+
+.final-step .step-number {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+/* Responzivní úpravy pro ovládací prvky */
+@media (max-width: 768px) {
+    .guide-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .guide-toggle-btn,
+    .guide-reset-btn {
+        width: 100%;
+        max-width: 200px;
+        justify-content: center;
+    }
+    
+    .guide-step::after {
+        display: none;
+    }
+}
