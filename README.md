@@ -122,7 +122,7 @@ Plugin poskytuje moderní admin rozhraní s:
 *Vytvoření a zkopírování API klíče*
 
 ### Validátory v akci
-![Email validátor](assets/frontend.css)
+![Email validátor](assets/api03.png)
 *Real-time validace emailových adres*
 
 ## ❓ FAQ
@@ -224,8 +224,6 @@ Tento plugin je licencován pod GPL v2 nebo novější. Více informací najdete
 Plugin vytvořen studiem **Webklient** - [www.webklient.cz](https://www.webklient.cz)  
 **Mediatoring.com s.r.o.** - Specializace na moderní webová řešení a WordPress development
 
-### Sponzorováno Foxentry
-Tento plugin je oficiálně podporován [Foxentry](https://foxentry.com/?aff=or8eaq) - nejlepší českou službou pro validaci dat.
 
 ---
 

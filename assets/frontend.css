@@ -127,13 +127,15 @@
 }
 
 .foxentry-result.valid::before {
-    content: "✓ ";
+    content: "✅ ";
     font-weight: bold;
+    font-size: 16px;
 }
 
 .foxentry-result.invalid::before {
-    content: "✗ ";
+    content: "❌ ";
     font-weight: bold;
+    font-size: 16px;
 }
 
 .foxentry-result.loading::before {
@@ -382,20 +384,24 @@
 .step-image {
     margin: 15px 0;
     text-align: center;
+    width: 33%;
+    flex-shrink: 0;
 }
 
 .step-image img {
-    max-width: 100%;
+    width: 100%;
     height: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.4s ease;
+    object-fit: cover;
 }
 
 .step-image img:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05) rotate(1deg);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .image-caption {
@@ -640,5 +646,167 @@
     
     .guide-step::after {
         display: none;
+    }
+}
+
+/* ===== SKENER FORMULÁŘŮ ===== */
+
+.foxentry-form-scanner {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 25px;
+    margin: 20px 0;
+}
+
+.foxentry-form-scanner h2 {
+    color: #495057;
+    margin-top: 0;
+    font-size: 24px;
+}
+
+.scanner-controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.scanner-controls .button {
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.scanner-controls .button-primary {
+    background: linear-gradient(135deg, #007cba, #005a87);
+    border-color: #007cba;
+}
+
+.scanner-controls .button-primary:hover {
+    background: linear-gradient(135deg, #005a87, #004466);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 124, 186, 0.3);
+}
+
+#scan-results {
+    margin-top: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+#scan-results h3 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.form-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 15px 0;
+    transition: all 0.3s ease;
+}
+
+.form-item:hover {
+    border-color: #007cba;
+    box-shadow: 0 2px 8px rgba(0, 124, 186, 0.1);
+}
+
+.form-item h4 {
+    margin: 0 0 10px 0;
+    color: #007cba;
+    font-size: 18px;
+}
+
+.form-item p {
+    margin: 5px 0;
+    color: #6c757d;
+}
+
+.form-item ul {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+}
+
+.form-item li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.form-item li:last-child {
+    border-bottom: none;
+}
+
+.form-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-item input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.form-item .apply-validation {
+    margin-top: 15px;
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    border-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.form-item .apply-validation:hover {
+    background: linear-gradient(135deg, #1e7e34, #155724);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* Loading stav pro skener */
+.scanner-controls .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Animace pro výsledky */
+#scan-results {
+    animation: slideInDown 0.5s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responzivní úpravy pro skener */
+@media (max-width: 768px) {
+    .scanner-controls {
+        flex-direction: column;
+    }
+    
+    .scanner-controls .button {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .form-item {
+        padding: 15px;
     }
 }
