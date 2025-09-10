@@ -12,7 +12,10 @@
 
 - 🚀 **REST API 2.0** - Přímá integrace s Foxentry API pro maximální spolehlivost
 - ⚡ **Real-time validace** - Okamžitá validace dat během psaní s debounce (800ms)
-- 📧 **Podpora více typů** - Email, telefon, adresa s pokročilou validací
+- 📧 **Kompletní validace** - Email, telefon, adresa, firma, jméno s pokročilou validací
+- 🔍 **Našeptávání** - Autocomplete pro adresy, firmy, emaily a telefony
+- 📊 **Informace navíc** - Detailní informace o adresách, firmách a jménech
+- 🌍 **Lokalizace** - Adresy v okolí uživatele podle GPS souřadnic
 - 🔧 **Automatické opravy** - API automaticky opravuje chyby v datech
 - 💡 **Inteligentní návrhy** - Nabízí alternativy pro neplatné údaje
 - 🎨 **Moderní UI** - Responzivní design s loading indikátory a animacemi
@@ -23,6 +26,7 @@
 - 📋 **Vizuální průvodce** - Interaktivní návod k získání API klíče s obrázky
 - 💾 **Cache systém** - Nastavitelný cache pro optimalizaci výkonu
 - 🎯 **Shortcodes** - Jednoduché vkládání validátorů do obsahu
+- 🛒 **WooCommerce podpora** - Automatická detekce a optimalizace pro e-shopy
 
 ## 🎯 Shortcodes
 
@@ -31,6 +35,22 @@
 [foxentry_validator type="email"]     <!-- Validátor emailových adres -->
 [foxentry_validator type="phone"]     <!-- Validátor telefonních čísel -->
 [foxentry_validator type="address"]   <!-- Validátor fyzických adres -->
+[foxentry_validator type="company"]   <!-- Validátor firem a IČO -->
+[foxentry_validator type="name"]      <!-- Validátor jmen a příjmení -->
+```
+
+### Našeptávání (Autocomplete)
+```html
+[foxentry_validator type="address_search"]  <!-- Našeptávání adres -->
+[foxentry_validator type="company_search"]  <!-- Našeptávání firem -->
+[foxentry_validator type="email_search"]    <!-- Našeptávání emailových domén -->
+```
+
+### Informace navíc
+```html
+[foxentry_validator type="address_info"]    <!-- Detailní informace o adrese -->
+[foxentry_validator type="company_info"]    <!-- Detailní informace o firmě -->
+[foxentry_validator type="address_localize"] <!-- Adresy v okolí (GPS) -->
 ```
 
 ### Pokročilé možnosti
@@ -43,6 +63,9 @@
 
 <!-- Nepovinné pole -->
 [foxentry_validator type="phone" required="false"]
+
+<!-- Našeptávání s vlastním limitem výsledků -->
+[foxentry_validator type="address_search" limit="5" placeholder="Začněte psát adresu..."]
 ```
 
 
@@ -153,13 +176,35 @@ V adminu pluginu klikněte na "Otestovat API klíč" - plugin automaticky ověř
 
 ### Jaké typy validace podporuje?
 
-- **Email** - Validace a oprava emailových adres
-- **Telefon** - Validace a formátování telefonních čísel
-- **Adresa** - Validace a standardizace fyzických adres
+#### Základní validace
+- **Email** - Validace a oprava emailových adres (rozšířená validace)
+- **Telefon** - Validace a formátování telefonních čísel (celosvětově)
+- **Adresa** - Validace a standardizace fyzických adres (CZ, SK, PL)
+- **Firma** - Validace firem a IČO (CZ, SK, PL)
+- **Jméno** - Validace jmen a příjmení (CZ, SK)
+
+#### Našeptávání (Autocomplete)
+- **Adresy** - Našeptávání adres při psaní
+- **Firmy** - Našeptávání firem podle názvu nebo IČO
+- **Emaily** - Našeptávání emailových domén
+
+#### Informace navíc
+- **Adresa** - Detailní informace o adrese (základní/plné)
+- **Firma** - Detailní informace o firmě (základní/rozšířené/plné)
+- **Lokalizace** - Adresy v okolí uživatele podle GPS souřadnic
 
 ### Jak funguje cache?
 
 Plugin cachuje výsledky validace pro optimalizaci výkonu. Výchozí doba je 1 hodina, ale můžete ji změnit v nastavení.
+
+### Funguje s WooCommerce?
+
+Ano! Plugin je optimalizován pro WooCommerce:
+
+- **Automatická detekce** - Plugin automaticky rozpozná WooCommerce formuláře
+- **Optimalizace výkonu** - Nezpracovává každé pole množství produktu jako samostatný formulář
+- **Inteligentní skenování** - Zaměřuje se pouze na relevantní formuláře (checkout, registrace, kontakt)
+- **Respektuje limity** - Nepřetěžuje admin rozhraní při velkém množství produktů
 
 ## 🔧 Pro vývojáře
 

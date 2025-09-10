@@ -290,15 +290,34 @@ class FoxentryIntegration {
                 align-items: center;
             }
             
-            .remove-validation {
-                background: #dc3545 !important;
-                border-color: #dc3545 !important;
-                color: white !important;
-            }
+        .remove-validation {
+            background: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+        }
+        
+        .validation-type-select {
+            margin-left: 10px;
+            padding: 2px 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+        }
             
             .remove-validation:hover {
                 background: #c82333 !important;
                 border-color: #bd2130 !important;
+            }
+            
+            .update-validation {
+                background: #007cba !important;
+                border-color: #007cba !important;
+                color: white !important;
+            }
+            
+            .update-validation:hover {
+                background: #005a87 !important;
+                border-color: #005a87 !important;
             }
         </style>
         
@@ -604,9 +623,14 @@ class FoxentryIntegration {
                 
                 // Získání vybraných polí
                 $('#forms-list .form-item').eq(formIndex).find('input[type="checkbox"]:checked').each(function() {
+                    var $checkbox = $(this);
+                    var $select = $checkbox.siblings('select.validation-type-select');
+                    var validationType = $select.val();
+                    
                     selectedFields.push({
-                        name: $(this).val(),
-                        type: $(this).data('type')
+                        name: $checkbox.val(),
+                        type: $checkbox.data('type'),
+                        validation_type: validationType
                     });
                 });
                 
@@ -628,9 +652,48 @@ class FoxentryIntegration {
                         var $formItem = $('#forms-list .form-item').eq(formIndex);
                         $formItem.addClass('validation-applied');
                         $formItem.find('.apply-validation').hide();
+                        $formItem.find('.update-validation').show();
                         $formItem.find('.remove-validation').show();
                     } else {
                         alert('<?php _e('Chyba při aplikování validace:', 'foxentry-integration'); ?> ' + response.data);
+                    }
+                });
+            });
+            
+            // Aktualizace validace
+            $(document).on('click', '.update-validation', function() {
+                var formIndex = $(this).data('form');
+                var selectedFields = [];
+                
+                // Získání vybraných polí
+                $('#forms-list .form-item').eq(formIndex).find('input[type="checkbox"]:checked').each(function() {
+                    var $checkbox = $(this);
+                    var $select = $checkbox.siblings('select.validation-type-select');
+                    var validationType = $select.val();
+                    
+                    selectedFields.push({
+                        name: $checkbox.val(),
+                        type: $checkbox.data('type'),
+                        validation_type: validationType
+                    });
+                });
+                
+                if (selectedFields.length === 0) {
+                    alert('<?php _e('Vyberte alespoň jedno pole pro validaci', 'foxentry-integration'); ?>');
+                    return;
+                }
+                
+                // AJAX volání pro aktualizaci nastavení
+                $.post(ajaxurl, {
+                    action: 'foxentry_save_form_validation',
+                    nonce: '<?php echo wp_create_nonce('foxentry_save_validation'); ?>',
+                    form_index: formIndex,
+                    fields: selectedFields
+                }, function(response) {
+                    if (response.success) {
+                        alert('<?php _e('Validace byla úspěšně aktualizována!', 'foxentry-integration'); ?>');
+                    } else {
+                        alert('<?php _e('Chyba při aktualizaci validace:', 'foxentry-integration'); ?> ' + response.data);
                     }
                 });
             });
@@ -655,6 +718,7 @@ class FoxentryIntegration {
                         var $formItem = $('#forms-list .form-item').eq(formIndex);
                         $formItem.removeClass('validation-applied');
                         $formItem.find('.apply-validation').show().prop('disabled', false).text('<?php _e('Aplikovat validaci', 'foxentry-integration'); ?>');
+                        $formItem.find('.update-validation').hide();
                         $formItem.find('.remove-validation').hide();
                         $formItem.find('input[type="checkbox"]').prop('checked', false);
                     } else {
@@ -672,16 +736,27 @@ class FoxentryIntegration {
                         html += '<div class="form-item">';
                         html += '<h4>Formulář ' + (index + 1) + '</h4>';
                         html += '<p><strong>Stránka:</strong> ' + form.page + '</p>';
-                        html += '<p><strong>Nalezená pole:</strong></p>';
+                        html += '<p><strong>Nalezená pole:</strong> <small>(Zaklikněte pole, která chcete validovat a vyberte typ validace)</small></p>';
                         html += '<ul>';
                         form.fields.forEach(function(field) {
                             html += '<li>';
                             html += '<label><input type="checkbox" value="' + field.name + '" data-type="' + field.validation_type + '" data-form="' + index + '"> ';
                             if (field.label && field.label !== field.name) {
-                                html += field.label + ' (' + field.name + ') - ' + field.type + ' - <strong>' + field.validation_type + '</strong>';
+                                html += field.label + ' (' + field.name + ') - ' + field.type;
                             } else {
-                                html += field.name + ' (' + field.type + ') - <strong>' + field.validation_type + '</strong>';
+                                html += field.name + ' (' + field.type + ')';
                             }
+                            html += ' <select class="validation-type-select" data-field="' + field.name + '">';
+                            html += '<option value="email"' + (field.validation_type === 'email' ? ' selected' : '') + '>Email</option>';
+                            html += '<option value="phone"' + (field.validation_type === 'phone' ? ' selected' : '') + '>Telefon</option>';
+                            html += '<option value="address"' + (field.validation_type === 'address' ? ' selected' : '') + '>Adresa</option>';
+                            html += '<option value="company"' + (field.validation_type === 'company' ? ' selected' : '') + '>Název firmy</option>';
+                            html += '<option value="name"' + (field.validation_type === 'name' ? ' selected' : '') + '>Jméno</option>';
+                            html += '<option value="address_search"' + (field.validation_type === 'address_search' ? ' selected' : '') + '>Našeptávání adres</option>';
+                            html += '<option value="company_search"' + (field.validation_type === 'company_search' ? ' selected' : '') + '>Našeptávání firem</option>';
+                            html += '<option value="email_search"' + (field.validation_type === 'email_search' ? ' selected' : '') + '>Našeptávání emailů</option>';
+                            html += '<option value="text"' + (field.validation_type === 'text' ? ' selected' : '') + '>Text (bez validace)</option>';
+                            html += '</select>';
                             html += '</label>';
                             html += '</li>';
                         });
@@ -690,7 +765,10 @@ class FoxentryIntegration {
                         html += '<button type="button" class="button apply-validation" data-form="' + index + '">';
                         html += '<?php _e('Aplikovat validaci', 'foxentry-integration'); ?>';
                         html += '</button>';
-                        html += '<button type="button" class="button remove-validation" data-form="' + index + '" style="display: none; margin-left: 10px; background: #dc3545; border-color: #dc3545;">';
+                        html += '<button type="button" class="button update-validation" data-form="' + index + '" style="display: none; margin-left: 10px; background: #007cba; border-color: #007cba; color: white;">';
+                        html += '<?php _e('Aktualizovat validaci', 'foxentry-integration'); ?>';
+                        html += '</button>';
+                        html += '<button type="button" class="button remove-validation" data-form="' + index + '" style="display: none; margin-left: 10px; background: #dc3545; border-color: #dc3545; color: white;">';
                         html += '<?php _e('Zrušit validaci', 'foxentry-integration'); ?>';
                         html += '</button>';
                         html += '</div>';
@@ -717,7 +795,14 @@ class FoxentryIntegration {
                         var $formItem = $('#forms-list .form-item').eq(parseInt(formIndex));
                         $formItem.addClass('validation-applied');
                         $formItem.find('.apply-validation').hide();
+                        $formItem.find('.update-validation').show();
                         $formItem.find('.remove-validation').show();
+                        
+                        // Označit checkboxy pro validovaná pole
+                        var validatedFields = savedValidations[formIndex];
+                        validatedFields.forEach(function(field) {
+                            $formItem.find('input[value="' + field.name + '"]').prop('checked', true);
+                        });
                     });
                 }, 100);
             }
@@ -733,7 +818,8 @@ class FoxentryIntegration {
             'class' => 'foxentry-validator',
             'form_action' => '',
             'submit_text' => '',
-            'required' => 'true'
+            'required' => 'true',
+            'limit' => '10'
         ), $atts);
         
         $placeholder = $atts['placeholder'] ?: $this->get_default_placeholder($atts['type']);
@@ -752,9 +838,13 @@ class FoxentryIntegration {
                            name="foxentry_<?php echo esc_attr($atts['type']); ?>"
                            class="<?php echo esc_attr($atts['class']); ?>" 
                            data-type="<?php echo esc_attr($atts['type']); ?>"
+                           data-limit="<?php echo esc_attr($atts['limit']); ?>"
                            placeholder="<?php echo esc_attr($placeholder); ?>"
                            <?php echo $required; ?> />
                     <div class="foxentry-result" id="<?php echo $unique_id; ?>_result"></div>
+                    <?php if (strpos($atts['type'], '_search') !== false): ?>
+                    <div class="foxentry-suggestions" id="<?php echo $unique_id; ?>_suggestions" style="display: none;"></div>
+                    <?php endif; ?>
                 </div>
                 <script>
                 console.log('Foxentry: Shortcode vytvořen s ID:', '<?php echo $unique_id; ?>', 'Typ:', '<?php echo esc_attr($atts['type']); ?>', 'Třída:', '<?php echo esc_attr($atts['class']); ?>');
@@ -773,21 +863,16 @@ class FoxentryIntegration {
     
     
     public function ajax_validate() {
-        // Debug log
-        error_log('Foxentry AJAX: Validace volána s hodnotou: ' . $_POST['value'] . ', typ: ' . $_POST['type']);
-        
         // Bezpečnostní kontrola
         if (!wp_verify_nonce($_POST['nonce'], 'foxentry_validate')) {
-            error_log('Foxentry AJAX: Chyba nonce');
-            wp_die(__('Bezpečnostní chyba', 'foxentry-integration'));
+            wp_send_json_error('Security error - invalid nonce');
         }
         
         $value = sanitize_text_field($_POST['value']);
         $type = sanitize_text_field($_POST['type']);
         
         if (empty($this->api_key)) {
-            error_log('Foxentry AJAX: API klíč není nastaven');
-            wp_send_json_error(__('API klíč není nastaven', 'foxentry-integration'));
+            wp_send_json_error('API key not set');
         }
         
         // Kontrola cache
@@ -799,28 +884,38 @@ class FoxentryIntegration {
         }
         
         // Foxentry validace pomocí REST API
-        error_log('Foxentry AJAX: Volám API pro typ: ' . $type . ', hodnota: ' . $value);
         $result = $this->validate_with_foxentry_api($type, $value);
         
         if ($result) {
-            error_log('Foxentry AJAX: API vrátilo výsledek: ' . print_r($result, true));
             // Uložení do cache
             $cache_duration = get_option('foxentry_cache_duration', 3600);
             set_transient($cache_key, $result, $cache_duration);
+            
             wp_send_json_success($result);
         } else {
-            error_log('Foxentry AJAX: API vrátilo false');
-            wp_send_json_error(__('Chyba při validaci', 'foxentry-integration'));
+            wp_send_json_error('Validation error');
         }
     }
     
     private function validate_with_foxentry_api($type, $value) {
-        error_log('Foxentry API: Začínám validaci pro typ: ' . $type . ', hodnota: ' . $value);
         
         $endpoints = array(
+            // Validace
             'email' => 'https://api.foxentry.com/email/validate',
             'phone' => 'https://api.foxentry.com/phone/validate',
-            'address' => 'https://api.foxentry.com/location/validate'
+            'address' => 'https://api.foxentry.com/location/validate',
+            'company' => 'https://api.foxentry.com/company/validate',
+            'name' => 'https://api.foxentry.com/name/validate',
+            
+            // Našeptávání
+            'address_search' => 'https://api.foxentry.com/location/search',
+            'company_search' => 'https://api.foxentry.com/company/search',
+            'email_search' => 'https://api.foxentry.com/email/search',
+            
+            // Informace navíc
+            'address_info' => 'https://api.foxentry.com/location/get',
+            'company_info' => 'https://api.foxentry.com/company/get',
+            'address_localize' => 'https://api.foxentry.com/location/localize'
         );
         
         if (!isset($endpoints[$type])) {
@@ -830,23 +925,18 @@ class FoxentryIntegration {
         
         error_log('Foxentry API: Používám endpoint: ' . $endpoints[$type]);
         
-        $request_data = array(
-            'request' => array(
-                'query' => array(
-                    $type => $value
-                ),
-                'options' => array(
-                    'validationType' => 'extended'
-                )
-            )
-        );
+        // Připravíme request data podle typu
+        $request_data = $this->prepare_request_data($type, $value);
+        
+        error_log('Foxentry API: Request data: ' . json_encode($request_data));
         
         $response = wp_remote_post($endpoints[$type], array(
             'headers' => array(
                 'Authorization' => 'Bearer ' . $this->api_key,
                 'Api-Version' => '2.0',
                 'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
+                'Accept' => 'application/json',
+                'User-Agent' => 'FoxentryWordPressPlugin/1.0'
             ),
             'body' => json_encode($request_data),
             'timeout' => 10
@@ -854,122 +944,501 @@ class FoxentryIntegration {
         
         if (is_wp_error($response)) {
             error_log('Foxentry API: WP Error: ' . $response->get_error_message());
-            return false;
+            return array(
+                'isValid' => false,
+                'message' => __('Chyba při komunikaci s Foxentry API', 'foxentry-integration'),
+                'error' => $response->get_error_message()
+            );
         }
         
         $status_code = wp_remote_retrieve_response_code($response);
-        error_log('Foxentry API: Status code: ' . $status_code);
-        
-        if ($status_code !== 200) {
-            $body = wp_remote_retrieve_body($response);
-            error_log('Foxentry API: Error response: ' . $body);
-            return false;
-        }
-        
         $body = wp_remote_retrieve_body($response);
+        $headers = wp_remote_retrieve_headers($response);
+        
+        error_log('Foxentry API: Status code: ' . $status_code);
         error_log('Foxentry API: Response body: ' . $body);
         
-        $data = json_decode($body, true);
+        // Zpracování HTTP status kódů podle OpenAPI specifikace
+        if ($status_code !== 200) {
+            $error_message = $this->get_http_error_message($status_code, $body);
+            error_log('Foxentry API: HTTP Error ' . $status_code . ': ' . $error_message);
+            return array(
+                'isValid' => false,
+                'message' => $error_message,
+                'error' => 'HTTP_' . $status_code,
+                'statusCode' => $status_code
+            );
+        }
         
-        if (!$data || !isset($data['response']['result'])) {
-            error_log('Foxentry API: Neplatná response struktura');
-            return false;
+        $data = json_decode($body, true);
+        if (!$data) {
+            error_log('Foxentry API: Chyba při dekódování JSON: ' . $body);
+            return array(
+                'isValid' => false,
+                'message' => __('Chyba při zpracování odpovědi z Foxentry API', 'foxentry-integration'),
+                'error' => 'Invalid JSON response'
+            );
+        }
+        
+        // Zkontrolujeme, zda jsou v odpovědi chyby
+        if (isset($data['errors']) && !empty($data['errors'])) {
+            error_log('Foxentry API: API Errors: ' . json_encode($data['errors']));
+            return array(
+                'isValid' => false,
+                'message' => __('Chyba v požadavku na Foxentry API', 'foxentry-integration'),
+                'error' => 'API_ERRORS',
+                'apiErrors' => $data['errors']
+            );
         }
         
         error_log('Foxentry API: Parsing response...');
-        $result = $this->parse_foxentry_response($data['response'], $type);
+        $result = $this->parse_foxentry_response($data, $type);
         error_log('Foxentry API: Parsed result: ' . print_r($result, true));
         
         return $result;
     }
     
+    private function get_http_error_message($status_code, $body) {
+        $error_messages = array(
+            400 => __('Chybný požadavek - zkontrolujte vstupní data', 'foxentry-integration'),
+            401 => __('Neautorizovaný přístup - zkontrolujte API klíč', 'foxentry-integration'),
+            402 => __('Platba vyžadována - překročen limit kreditů', 'foxentry-integration'),
+            403 => __('Přístup zakázán - nedostatečná oprávnění', 'foxentry-integration'),
+            404 => __('Endpoint nenalezen', 'foxentry-integration'),
+            405 => __('Metoda není povolena', 'foxentry-integration'),
+            429 => __('Příliš mnoho požadavků - překročen rate limit', 'foxentry-integration'),
+            500 => __('Vnitřní chyba serveru Foxentry', 'foxentry-integration'),
+            503 => __('Služba dočasně nedostupná', 'foxentry-integration')
+        );
+        
+        $base_message = isset($error_messages[$status_code]) ? $error_messages[$status_code] : __('Neznámá chyba HTTP', 'foxentry-integration');
+        
+        // Pokusíme se extrahovat detailní chybovou zprávu z odpovědi
+        $data = json_decode($body, true);
+        if ($data && isset($data['message'])) {
+            return $base_message . ': ' . $data['message'];
+        }
+        
+        return $base_message;
+    }
+    
+    private function prepare_request_data($type, $value) {
+        $base_request = array(
+            'request' => array(
+                'query' => array(),
+                'options' => array(),
+                'client' => array(
+                    'ip' => $this->get_client_ip(),
+                    'country' => 'CZ'
+                )
+            )
+        );
+        
+        switch ($type) {
+            case 'email':
+                $base_request['request']['query']['email'] = $value;
+                $base_request['request']['options']['validationType'] = 'extended';
+                $base_request['request']['options']['acceptDisposableEmails'] = true;
+                $base_request['request']['options']['acceptFreemails'] = true;
+                $base_request['request']['options']['correctionMode'] = 'full';
+                break;
+                
+            case 'phone':
+                $base_request['request']['query']['numberWithPrefix'] = $value;
+                $base_request['request']['options']['validationType'] = 'extended';
+                $base_request['request']['options']['formatNumber'] = false;
+                $base_request['request']['options']['correctionMode'] = 'full';
+                $base_request['request']['options']['preferredPrefixes'] = array('+420', '+421');
+                break;
+                
+            case 'address':
+                // Pro adresu rozdělíme hodnotu na komponenty
+                $address_parts = $this->parse_address($value);
+                $base_request['request']['query'] = array_merge($base_request['request']['query'], $address_parts);
+                $base_request['request']['options']['dataScope'] = 'basic';
+                $base_request['request']['options']['dataSource'] = array('CZ', 'SK', 'PL');
+                $base_request['request']['options']['zipFormat'] = false;
+                $base_request['request']['options']['countryFormat'] = 'alpha2';
+                $base_request['request']['options']['cityFormat'] = 'basic';
+                $base_request['request']['options']['resultsLimit'] = 10;
+                $base_request['request']['options']['acceptPostOfficeAsCity'] = false;
+                break;
+                
+            case 'company':
+                $base_request['request']['query']['name'] = $value;
+                $base_request['request']['query']['country'] = 'CZ';
+                $base_request['request']['options']['dataScope'] = 'basic';
+                $base_request['request']['options']['dataSource'] = array('CZ', 'SK', 'PL');
+                $base_request['request']['options']['resultsLimit'] = 10;
+                $base_request['request']['options']['includeTerminatedSubjects'] = false;
+                $base_request['request']['options']['zipFormat'] = false;
+                $base_request['request']['options']['cityFormat'] = 'basic';
+                $base_request['request']['options']['countryFormat'] = 'alpha2';
+                $base_request['request']['options']['legalFormType'] = 'any';
+                break;
+                
+            case 'name':
+                $base_request['request']['query']['name'] = $value;
+                $base_request['request']['options']['dataScope'] = 'basic';
+                $base_request['request']['options']['dataSource'] = array('CZ', 'SK');
+                $base_request['request']['options']['acceptDegrees'] = false;
+                $base_request['request']['options']['acceptContext'] = false;
+                $base_request['request']['options']['validationDepth'] = 'strict';
+                $base_request['request']['options']['smartMode'] = true;
+                break;
+                
+            // Našeptávání
+            case 'address_search':
+                $base_request['request']['query']['type'] = 'full';
+                $base_request['request']['query']['value'] = $value;
+                $base_request['request']['options']['resultsLimit'] = 10;
+                break;
+                
+            case 'company_search':
+                $base_request['request']['query']['type'] = 'name';
+                $base_request['request']['query']['value'] = $value;
+                $base_request['request']['options']['resultsLimit'] = 10;
+                break;
+                
+            case 'email_search':
+                $base_request['request']['query']['value'] = $value;
+                $base_request['request']['options']['resultsLimit'] = 10;
+                break;
+                
+            // Informace navíc
+            case 'address_info':
+                $base_request['request']['query']['country'] = 'CZ';
+                $base_request['request']['query']['id'] = $value;
+                $base_request['request']['options']['idType'] = 'external';
+                $base_request['request']['options']['dataScope'] = 'full';
+                break;
+                
+            case 'company_info':
+                $base_request['request']['query']['country'] = 'CZ';
+                $base_request['request']['query']['registrationNumber'] = $value;
+                $base_request['request']['options']['dataScope'] = 'extended';
+                break;
+                
+            case 'address_localize':
+                // Pro localize potřebujeme GPS souřadnice
+                $coords = $this->parse_coordinates($value);
+                $base_request['request']['query']['lat'] = $coords['lat'];
+                $base_request['request']['query']['lon'] = $coords['lon'];
+                $base_request['request']['options']['resultsLimit'] = 10;
+                $base_request['request']['options']['radius'] = 15;
+                $base_request['request']['options']['acceptNearest'] = false;
+                break;
+                
+            default:
+                // Výchozí pro neznámé typy
+                $base_request['request']['query'][$type] = $value;
+                $base_request['request']['options']['validationType'] = 'extended';
+        }
+        
+        return $base_request;
+    }
+    
+    private function get_client_ip() {
+        $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR');
+        foreach ($ip_keys as $key) {
+            if (array_key_exists($key, $_SERVER) === true) {
+                foreach (explode(',', $_SERVER[$key]) as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+        return '127.0.0.1';
+    }
+    
+    private function parse_address($address) {
+        $parts = array();
+        $address = trim($address);
+        
+        // Pokud je adresa prázdná, vrátíme prázdný výsledek
+        if (empty($address)) {
+            return array('full' => '', 'country' => 'CZ');
+        }
+        
+        // Pokusíme se najít PSČ (formát: 123 45 nebo 12345)
+        $zip_pattern = '/(\d{3}\s?\d{2})/';
+        if (preg_match($zip_pattern, $address, $zip_matches)) {
+            $parts['zip'] = $zip_matches[1];
+            $address = preg_replace($zip_pattern, '', $address);
+        }
+        
+        // Najdeme číslo domu (formát: 123, 123a, 123/45, 123a/45b)
+        $house_number_pattern = '/(\d+[a-zA-Z]*(?:\/\d+[a-zA-Z]*)?)/';
+        $house_number = '';
+        if (preg_match($house_number_pattern, $address, $house_matches)) {
+            $house_number = $house_matches[1];
+            $address = preg_replace($house_number_pattern, '', $address);
+        }
+        
+        // Zbytek rozdělíme na slova a najdeme ulici a město
+        $words = preg_split('/\s+/', trim($address));
+        
+        if (count($words) >= 2) {
+            // Poslední slovo je pravděpodobně město
+            $parts['city'] = end($words);
+            $street_words = array_slice($words, 0, -1);
+            
+            // Pokud máme číslo domu, přidáme ho k ulici
+            if (!empty($house_number)) {
+                $parts['streetWithNumber'] = implode(' ', $street_words) . ' ' . $house_number;
+            } else {
+                $parts['streetWithNumber'] = implode(' ', $street_words);
+            }
+            
+            // Pokud máme jen ulici bez čísla, uložíme ji do street
+            if (empty($house_number)) {
+                $parts['street'] = implode(' ', $street_words);
+            }
+        } elseif (count($words) == 1) {
+            // Máme jen jedno slovo - pravděpodobně město
+            $parts['city'] = $words[0];
+            if (!empty($house_number)) {
+                $parts['streetWithNumber'] = $house_number;
+            }
+        } else {
+            // Žádná slova - použijeme původní adresu
+            $parts['full'] = $address;
+        }
+        
+        // Pokud jsme nenašli žádné komponenty, použijeme full adresu
+        if (empty($parts['streetWithNumber']) && empty($parts['city']) && empty($parts['full'])) {
+            $parts['full'] = $address;
+        }
+        
+        $parts['country'] = 'CZ';
+        
+        return $parts;
+    }
+    
+    private function parse_coordinates($value) {
+        $value = trim($value);
+        
+        // Pokud je hodnota prázdná, použijeme výchozí souřadnice
+        if (empty($value)) {
+            return $this->get_default_coordinates();
+        }
+        
+        // Pokusíme se najít souřadnice ve formátu "lat,lon" nebo "lat, lon"
+        if (preg_match('/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/', $value, $matches)) {
+            $lat = floatval($matches[1]);
+            $lon = floatval($matches[2]);
+            
+            // Zkontrolujeme, zda jsou souřadnice v rozumném rozsahu
+            if ($this->is_valid_coordinate($lat, $lon)) {
+                return array(
+                    'lat' => $lat,
+                    'lon' => $lon
+                );
+            }
+        }
+        
+        // Pokusíme se najít souřadnice ve formátu "lat;lon" nebo "lat; lon"
+        if (preg_match('/^(-?\d+\.?\d*)\s*;\s*(-?\d+\.?\d*)$/', $value, $matches)) {
+            $lat = floatval($matches[1]);
+            $lon = floatval($matches[2]);
+            
+            if ($this->is_valid_coordinate($lat, $lon)) {
+                return array(
+                    'lat' => $lat,
+                    'lon' => $lon
+                );
+            }
+        }
+        
+        // Pokusíme se najít souřadnice ve formátu "lat lon" (mezera místo čárky)
+        if (preg_match('/^(-?\d+\.?\d*)\s+(-?\d+\.?\d*)$/', $value, $matches)) {
+            $lat = floatval($matches[1]);
+            $lon = floatval($matches[2]);
+            
+            if ($this->is_valid_coordinate($lat, $lon)) {
+                return array(
+                    'lat' => $lat,
+                    'lon' => $lon
+                );
+            }
+        }
+        
+        // Pokud se nepodařilo parsovat, použijeme výchozí souřadnice
+        return $this->get_default_coordinates();
+    }
+    
+    private function is_valid_coordinate($lat, $lon) {
+        // Zkontrolujeme, zda jsou souřadnice v rozumném rozsahu
+        return ($lat >= -90 && $lat <= 90) && ($lon >= -180 && $lon <= 180);
+    }
+    
+    private function get_default_coordinates() {
+        // Výchozí souřadnice pro Prahu
+        return array(
+            'lat' => 50.0755,
+            'lon' => 14.4378
+        );
+    }
+    
     private function parse_foxentry_response($response, $type) {
-        $result = $response['result'];
-        $is_valid = $result['isValid'];
-        $proposal = $result['proposal'];
+        // Podle OpenAPI specifikace je struktura: status, request, response, errors
+        if (!isset($response['response'])) {
+            error_log('Foxentry API: Chybná struktura odpovědi - chybí response');
+            return array(
+                'isValid' => false,
+                'message' => __('Chyba při zpracování odpovědi z Foxentry API', 'foxentry-integration'),
+                'error' => 'Invalid response structure'
+            );
+        }
+        
+        $api_response = $response['response'];
+        
+        // Pro našeptávání a informace máme jinou strukturu
+        if (in_array($type, ['address_search', 'company_search', 'email_search', 'address_info', 'company_info', 'address_localize'])) {
+            return $this->parse_search_or_info_response($api_response, $type);
+        }
+        
+        // Pro validaci používáme standardní logiku
+        if (!isset($api_response['result'])) {
+            error_log('Foxentry API: Chybná struktura odpovědi - chybí result');
+            return array(
+                'isValid' => false,
+                'message' => __('Chyba při zpracování výsledku z Foxentry API', 'foxentry-integration'),
+                'error' => 'Missing result in response'
+            );
+        }
+        
+        $result = $api_response['result'];
+        $is_valid = $result['isValid'] ?? false;
+        $proposal = $result['proposal'] ?? 'invalid';
         
         // Zpracování opravených dat
         $corrected_data = null;
-        if (isset($response['resultCorrected']) && $response['resultCorrected']['isValid']) {
-            $corrected_data = $response['resultCorrected']['data'];
+        if (isset($api_response['resultCorrected']) && $api_response['resultCorrected']['isValid']) {
+            $corrected_data = $api_response['resultCorrected']['data'] ?? null;
         }
         
         // Zpracování návrhů
         $suggestions = array();
-        if (isset($response['suggestions']) && !empty($response['suggestions'])) {
-            foreach ($response['suggestions'] as $suggestion) {
-                $suggestions[] = $suggestion['data'];
+        if (isset($api_response['suggestions']) && !empty($api_response['suggestions'])) {
+            foreach ($api_response['suggestions'] as $suggestion) {
+                $suggestions[] = $suggestion['data'] ?? $suggestion;
             }
         }
         
-        // Vytvoření zprávy
-        $message = $this->create_validation_message($is_valid, $proposal, $corrected_data, $suggestions, $type);
+        // Používáme Foxentry API zprávy místo vlastních
+        $message = $this->get_foxentry_message($result, $proposal, $corrected_data, $suggestions);
         
         return array(
             'isValid' => $is_valid,
             'message' => $message,
             'correctedData' => $corrected_data,
             'suggestions' => $suggestions,
-            'proposal' => $proposal
+            'proposal' => $proposal,
+            'data' => $result['data'] ?? null,
+            'flags' => $result['flags'] ?? null
         );
     }
     
-    private function create_validation_message($is_valid, $proposal, $corrected_data, $suggestions, $type) {
+    private function parse_search_or_info_response($response, $type) {
         $type_names = array(
-            'email' => 'Email',
-            'phone' => 'Telefon',
-            'address' => 'Adresa'
+            'address_search' => 'Adresa',
+            'company_search' => 'Firma',
+            'email_search' => 'Email',
+            'address_info' => 'Adresa',
+            'company_info' => 'Firma',
+            'address_localize' => 'Adresa v okolí'
         );
         
         $type_name = isset($type_names[$type]) ? $type_names[$type] : ucfirst($type);
         
+        // Pro search endpoints
+        if (strpos($type, '_search') !== false) {
+            if (isset($response['suggestions']) && !empty($response['suggestions'])) {
+                $suggestions = array();
+                foreach ($response['suggestions'] as $suggestion) {
+                    $suggestions[] = $suggestion['data'] ?? $suggestion;
+                }
+                
+                return array(
+                    'isValid' => true,
+                    'message' => sprintf(__('Nalezeno %d návrhů pro %s', 'foxentry-integration'), count($suggestions), $type_name),
+                    'suggestions' => $suggestions,
+                    'type' => 'search',
+                    'resultsCount' => count($suggestions)
+                );
+            } else {
+                return array(
+                    'isValid' => false,
+                    'message' => sprintf(__('Žádné výsledky pro %s', 'foxentry-integration'), $type_name),
+                    'type' => 'search',
+                    'resultsCount' => 0
+                );
+            }
+        }
+        
+        // Pro info endpoints
+        if (strpos($type, '_info') !== false || $type === 'address_localize') {
+            if (isset($response['data']) && !empty($response['data'])) {
+                return array(
+                    'isValid' => true,
+                    'message' => sprintf(__('Informace o %s načteny', 'foxentry-integration'), $type_name),
+                    'data' => $response['data'],
+                    'type' => 'info'
+                );
+            } else {
+                return array(
+                    'isValid' => false,
+                    'message' => sprintf(__('Žádné informace o %s', 'foxentry-integration'), $type_name),
+                    'type' => 'info'
+                );
+            }
+        }
+        
+        // Fallback
+        return array(
+            'isValid' => false,
+            'message' => sprintf(__('Neznámý typ odpovědi pro %s', 'foxentry-integration'), $type_name),
+            'type' => 'unknown'
+        );
+    }
+    
+    private function get_foxentry_message($result, $proposal, $corrected_data, $suggestions) {
+        // Používáme Foxentry API zprávy místo vlastních
+        // Podle oficiální knihovny bychom měli používat $result['data'] pro zobrazení
+        
+        if (isset($result['data']) && is_array($result['data'])) {
+            // Pokud má Foxentry API vlastní zprávy v data, použijeme je
+            if (isset($result['data']['message'])) {
+                return $result['data']['message'];
+            }
+        }
+        
+        // Fallback na základní zprávy podle proposal
         switch ($proposal) {
             case 'valid':
-                return sprintf(__('%s je platný ✓', 'foxentry-integration'), $type_name);
-                
+                return 'Valid';
             case 'invalid':
-                $format_hints = $this->get_format_hints($type);
-                return sprintf(__('%s není platný. %s', 'foxentry-integration'), $type_name, $format_hints);
-                
+                return 'Invalid';
             case 'validWithSuggestion':
-                $message = sprintf(__('%s je platný ✓', 'foxentry-integration'), $type_name);
-                if (!empty($suggestions)) {
-                    $message .= ' ' . __('Doporučujeme:', 'foxentry-integration') . ' ' . implode(', ', array_column($suggestions, $type));
-                }
-                return $message;
-                
+                return 'Valid with suggestions';
             case 'invalidWithCorrection':
-                if ($corrected_data) {
-                    return sprintf(__('%s opraveno na: %s ✓', 'foxentry-integration'), $type_name, $corrected_data[$type]);
-                }
-                $format_hints = $this->get_format_hints($type);
-                return sprintf(__('%s není platný. %s', 'foxentry-integration'), $type_name, $format_hints);
-                
+                return 'Invalid with correction';
             default:
-                return $is_valid ? 
-                    sprintf(__('%s je platný ✓', 'foxentry-integration'), $type_name) : 
-                    sprintf(__('%s není platný. %s', 'foxentry-integration'), $type_name, $this->get_format_hints($type));
+                return $result['isValid'] ? 'Valid' : 'Invalid';
         }
     }
     
-    private function get_format_hints($type) {
-        switch ($type) {
-            case 'email':
-                return __('Očekávaný formát: jmeno@domena.cz', 'foxentry-integration');
-            case 'phone':
-                return __('Očekávaný formát: +420123456789 nebo 123456789', 'foxentry-integration');
-            case 'address':
-                return __('Očekávaný formát: Ulice číslo, Město, PSČ', 'foxentry-integration');
-            default:
-                return __('Zkontrolujte formát', 'foxentry-integration');
-        }
-    }
     
     private function get_default_placeholder($type) {
         $placeholders = array(
             'email' => __('Zadejte email adresu', 'foxentry-integration'),
             'phone' => __('Zadejte telefonní číslo', 'foxentry-integration'),
-            'address' => __('Zadejte adresu', 'foxentry-integration')
+            'address' => __('Zadejte adresu', 'foxentry-integration'),
+            'company' => __('Zadejte název firmy nebo IČO', 'foxentry-integration'),
+            'name' => __('Zadejte jméno a příjmení', 'foxentry-integration')
         );
         
         return isset($placeholders[$type]) ? $placeholders[$type] : __('Zadejte hodnotu', 'foxentry-integration');
@@ -985,43 +1454,86 @@ class FoxentryIntegration {
             true
         );
         
-        // Debug: Přidání informací o načítání
-        wp_add_inline_script('foxentry-frontend', 'console.log("Foxentry: Frontend script načten");', 'before');
-        
         // Načtení vygenerovaného validation scriptu
         $validation_script = get_option('foxentry_validation_script', '');
         if (!empty($validation_script)) {
-            wp_add_inline_script('foxentry-frontend', $validation_script);
-            wp_add_inline_script('foxentry-frontend', 'console.log("Foxentry: Validation script načten");', 'before');
-        } else {
-            wp_add_inline_script('foxentry-frontend', 'console.log("Foxentry: Žádný validation script");', 'before');
+            // Vymažeme generovaný script, aby se načetl finální script
+            update_option('foxentry_validation_script', '');
         }
+        
+        // Vytvoříme finální validation script
+        $test_script = "jQuery(document).ready(function($) {
+            var phoneInputs = $('input[type=\"tel\"], input[data-rule-int-phone-field=\"true\"]');
+            
+            phoneInputs.each(function() {
+                var input = $(this);
+                if (!input.hasClass('foxentry-validator')) {
+                    input.addClass('foxentry-validator');
+                    input.attr('data-type', 'phone');
+                    
+                    // Přidání result divu
+                    if (!input.siblings('.foxentry-result').length) {
+                        input.after('<div class=\"foxentry-result\"></div>');
+                    }
+                }
+            });
+            
+            // Event listenery pro validaci
+            phoneInputs.on('input blur', function() {
+                var input = $(this);
+                var value = input.val().trim();
+                var type = input.attr('data-type') || 'phone';
+                
+                if (value.length > 0) {
+                    // Přímá AJAX validace
+                    var resultDiv = input.siblings('.foxentry-result');
+                    
+                    // Zobrazíme loading
+                    resultDiv.removeClass('valid invalid').addClass('loading').text('Validating...');
+                    input.removeClass('valid invalid').addClass('validating');
+                    
+                    // AJAX volání
+                    $.ajax({
+                        url: foxentry_ajax.ajax_url,
+                        type: 'POST',
+                        data: {
+                            action: 'foxentry_validate',
+                            value: value,
+                            type: type,
+                            nonce: foxentry_ajax.nonce
+                        },
+                        timeout: 10000,
+                        success: function(response) {
+                            input.removeClass('validating');
+                            
+                            if (response.success && response.data) {
+                                if (response.data.isValid) {
+                                    input.removeClass('invalid').addClass('valid');
+                                    resultDiv.removeClass('loading invalid').addClass('valid').text(response.data.message);
+                                } else {
+                                    input.removeClass('valid').addClass('invalid');
+                                    resultDiv.removeClass('loading valid').addClass('invalid').text(response.data.message);
+                                }
+                            } else {
+                                input.removeClass('valid').addClass('invalid');
+                                resultDiv.removeClass('loading valid').addClass('invalid').text('Validation error');
+                            }
+                        },
+                        error: function(xhr, status) {
+                            input.removeClass('validating valid invalid');
+                            resultDiv.removeClass('loading valid invalid').text('Connection error');
+                        }
+                    });
+                }
+            });
+        });";
+        
+        
+        wp_add_inline_script('foxentry-frontend', $test_script);
         
         wp_localize_script('foxentry-frontend', 'foxentry_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('foxentry_validate'),
-            'messages' => array(
-                'validating' => __('Ověřuji...', 'foxentry-integration'),
-                'email_valid' => __('Email je platný', 'foxentry-integration'),
-                'email_invalid' => __('Email není platný', 'foxentry-integration'),
-                'phone_valid' => __('Telefon je platný', 'foxentry-integration'),
-                'phone_invalid' => __('Telefonní číslo není platné', 'foxentry-integration'),
-                'address_valid' => __('Adresa je platná', 'foxentry-integration'),
-                'address_invalid' => __('Adresa není platná', 'foxentry-integration'),
-                'email_format_error' => __('Neplatný formát emailu', 'foxentry-integration'),
-                'phone_format_error' => __('Neplatný formát telefonu', 'foxentry-integration'),
-                'address_format_error' => __('Adresa je příliš krátká', 'foxentry-integration'),
-                'validation_error' => __('Chyba při validaci:', 'foxentry-integration'),
-                'connection_error' => __('Chyba připojení', 'foxentry-integration'),
-                'timeout_error' => __('Vypršel časový limit', 'foxentry-integration'),
-                'unknown_type' => __('Neznámý typ validace', 'foxentry-integration'),
-                'invalid_format' => __('Neplatný formát', 'foxentry-integration'),
-                'submitting' => __('Odesílám...', 'foxentry-integration'),
-                'processing' => __('Zpracovávám...', 'foxentry-integration'),
-                'submitted' => __('Odesláno', 'foxentry-integration'),
-                'submit' => __('Odeslat', 'foxentry-integration'),
-                'invalid_data' => __('Neplatná data', 'foxentry-integration')
-            )
+            'nonce' => wp_create_nonce('foxentry_validate')
         ));
         
         wp_enqueue_style(
@@ -1031,8 +1543,6 @@ class FoxentryIntegration {
             FOXENTRY_PLUGIN_VERSION
         );
         
-        // Debug: Přidání informace o načítání CSS
-        wp_add_inline_script('foxentry-frontend', 'console.log("Foxentry: CSS styly načteny");', 'before');
     }
     
     public function admin_enqueue_scripts($hook) {
@@ -1160,13 +1670,11 @@ class FoxentryIntegration {
     
     private function generate_validation_script($fields) {
         $script = "jQuery(document).ready(function($) {";
-        $script .= "console.log('Foxentry: Načítám univerzální validation script pro', " . count($fields) . ", polí');";
-        $script .= "console.log('Foxentry: Pole pro validaci:', " . json_encode($fields) . ");";
-        
+          
         foreach ($fields as $field) {
-            $field_name = sanitize_text_field($field['name']);
-            $field_type = sanitize_text_field($field['type']);
-            $validation_type = sanitize_text_field($field['validation_type']);
+            $field_name = esc_js($field['name']);
+            $field_type = esc_js($field['type']);
+            $validation_type = esc_js($field['validation_type']);
             
             $script .= "
                 // Univerzální hledání pole
@@ -1188,6 +1696,7 @@ class FoxentryIntegration {
                     if (fieldId) {
                         selectors.push('input[id*=\"wpforms-\"][id*=\"field_' + fieldId[1] + '\"]');
                         selectors.push('textarea[id*=\"wpforms-\"][id*=\"field_' + fieldId[1] + '\"]');
+                        selectors.push('input[id=\"wpforms-' + fieldId[1] + '-field_' + fieldId[1] + '\"]');
                     }
                 }
                 
@@ -1195,6 +1704,13 @@ class FoxentryIntegration {
                     selectors.push('input[name*=\"contact-form-7\"]');
                     selectors.push('textarea[name*=\"contact-form-7\"]');
                 }
+                
+                // Pro Contact Form 7 přidáme specifické selektory
+                selectors.push('input.wpcf7-form-control[name=\"{$field_name}\"]');
+                selectors.push('textarea.wpcf7-form-control[name=\"{$field_name}\"]');
+                selectors.push('select.wpcf7-form-control[name=\"{$field_name}\"]');
+                selectors.push('input[name=\"{$field_name}\"][class*=\"wpcf7\"]');
+                selectors.push('textarea[name=\"{$field_name}\"][class*=\"wpcf7\"]');
                 
                 if ('{$field_name}'.includes('ninja_forms_field_')) {
                     var fieldId = '{$field_name}'.match(/ninja_forms_field_(\\d+)/);
@@ -1221,24 +1737,20 @@ class FoxentryIntegration {
                     selectors.push('input[aria-label*=\"phone\"]');
                     selectors.push('input[aria-label*=\"telefon\"]');
                     selectors.push('input[aria-label*=\"Telefon\"]');
+                    selectors.push('input[data-rule-int-phone-field=\"true\"]');
                 }
                 
                 var found = false;
-                console.log('Foxentry: Hledám pole \"{$field_name}\" s selektory:', selectors);
                 selectors.forEach(function(selector) {
                     if (!found) {
                         var \$elements = $(selector);
-                        console.log('Foxentry: Selektor \"' + selector + '\" našel', \$elements.length, 'elementů');
                         \$elements.each(function() {
                             var \$input = $(this);
                             
                             // Kontrola, zda pole už nemá validaci
                             if (\$input.hasClass('foxentry-validator')) {
-                                console.log('Foxentry: Pole už má validaci, přeskočuji');
                                 return;
                             }
-                            
-                            console.log('Foxentry: Aplikuji validaci na pole:', \$input.attr('name') || \$input.attr('id'), 'Typ:', '{$validation_type}');
                             
                             \$input.addClass('foxentry-validator');
                             \$input.attr('data-type', '{$validation_type}');
@@ -1246,22 +1758,22 @@ class FoxentryIntegration {
                             // Přidání wrapperu pokud neexistuje
                             if (!\$input.closest('.foxentry-field-wrapper').length) {
                                 \$input.wrap('<div class=\"foxentry-field-wrapper\"></div>');
+                            }
+                            
+                            // Přidání result divu pokud neexistuje
+                            if (!\$input.siblings('.foxentry-result').length) {
                                 \$input.after('<div class=\"foxentry-result\"></div>');
-                                console.log('Foxentry: Přidán wrapper a result div');
                             }
                             
                             found = true;
                         });
                     }
                 });
-                
-                if (!found) {
-                    console.log('Foxentry: Pole \"{$field_name}\" nebylo nalezeno');
-                }
             ";
         }
         
         $script .= "});";
+        
         
         // Uložení scriptu do WordPress
         update_option('foxentry_validation_script', $script);
@@ -1270,7 +1782,7 @@ class FoxentryIntegration {
     private function scan_website_forms() {
         $forms = array();
         
-        // 1. Univerzální skenování všech stránek a příspěvků
+        // 1. Univerzální skenování všech stránek a příspěvků (včetně page builderů)
         $this->scan_all_pages($forms);
         
         // 2. Skenování specifických form pluginů
@@ -1279,23 +1791,60 @@ class FoxentryIntegration {
         // 3. Skenování widgetů a sidebarů
         $this->scan_widgets($forms);
         
-        // 4. Skenování Elementor stránek
-        $this->scan_elementor_pages($forms);
-        
-        // 5. Skenování Bricks stránek
-        $this->scan_bricks_pages($forms);
-        
         return $forms;
     }
     
     private function scan_all_pages(&$forms) {
-        // Skenování všech typů stránek
+        // Optimalizace pro WooCommerce - omezíme počet stránek
+        $max_pages = 50; // Maximálně 50 stránek pro skenování
+        
+        // Skenování pouze relevantních stránek
         $post_types = get_post_types(array('public' => true), 'names');
-        $pages = get_posts(array(
+        
+        // Prioritizujeme důležité stránky
+        $priority_pages = get_posts(array(
             'post_type' => $post_types,
             'post_status' => 'publish',
-            'numberposts' => 200, // Více stránek pro lepší pokrytí
+            'numberposts' => $max_pages,
+            'meta_query' => array(
+                'relation' => 'OR',
+                array(
+                    'key' => '_wp_page_template',
+                    'value' => 'page-checkout.php',
+                    'compare' => 'LIKE'
+                ),
+                array(
+                    'key' => '_wp_page_template',
+                    'value' => 'page-cart.php',
+                    'compare' => 'LIKE'
+                ),
+                array(
+                    'key' => '_wp_page_template',
+                    'value' => 'page-contact.php',
+                    'compare' => 'LIKE'
+                ),
+                array(
+                    'key' => '_wp_page_template',
+                    'value' => 'default',
+                    'compare' => '='
+                )
+            )
         ));
+        
+        // Pokud je stránek málo, přidáme další
+        if (count($priority_pages) < 10) {
+            $additional_pages = get_posts(array(
+                'post_type' => $post_types,
+                'post_status' => 'publish',
+                'numberposts' => $max_pages - count($priority_pages),
+                'date_query' => array(
+                    'after' => '1 year ago' // Pouze stránky z posledního roku
+                )
+            ));
+            $pages = array_merge($priority_pages, $additional_pages);
+        } else {
+            $pages = $priority_pages;
+        }
         
         foreach ($pages as $page) {
             $content = $page->post_content;
@@ -1309,6 +1858,55 @@ class FoxentryIntegration {
             // Skenování meta polí (pro page buildery)
             $meta_forms = $this->extract_forms_from_meta($page->ID, $page_url, $page_title);
             $forms = array_merge($forms, $meta_forms);
+            
+            // Skenování různých page builderů
+            $this->scan_page_builder_content($page, $forms);
+        }
+    }
+    
+    private function scan_page_builder_content($page, &$forms) {
+        $page_url = get_permalink($page->ID);
+        $page_title = $page->post_title;
+        
+        // Elementor
+        if (class_exists('\Elementor\Plugin')) {
+            $elementor_data = get_post_meta($page->ID, '_elementor_data', true);
+            if ($elementor_data) {
+                $elementor_forms = $this->extract_forms_from_elementor($elementor_data, $page_url, $page_title);
+                $forms = array_merge($forms, $elementor_forms);
+            }
+        }
+        
+        // Bricks Builder
+        if (class_exists('\Bricks\Plugin')) {
+            $bricks_data = get_post_meta($page->ID, '_bricks_page_content', true);
+            if ($bricks_data) {
+                $bricks_forms = $this->extract_forms_from_bricks($bricks_data, $page_url, $page_title);
+                $forms = array_merge($forms, $bricks_forms);
+            }
+        }
+        
+        // Beaver Builder
+        if (class_exists('FLBuilder')) {
+            $beaver_data = get_post_meta($page->ID, '_fl_builder_data', true);
+            if ($beaver_data) {
+                $beaver_forms = $this->extract_forms_from_beaver($beaver_data, $page_url, $page_title);
+                $forms = array_merge($forms, $beaver_forms);
+            }
+        }
+        
+        // Divi Builder
+        if (function_exists('et_pb_is_pagebuilder_used')) {
+            if (et_pb_is_pagebuilder_used($page->ID)) {
+                $divi_forms = $this->extract_forms_from_divi($page->post_content, $page_url, $page_title);
+                $forms = array_merge($forms, $divi_forms);
+            }
+        }
+        
+        // Gutenberg blocks
+        if (has_blocks($page->post_content)) {
+            $gutenberg_forms = $this->extract_forms_from_gutenberg($page->post_content, $page_url, $page_title);
+            $forms = array_merge($forms, $gutenberg_forms);
         }
     }
     
@@ -1332,59 +1930,6 @@ class FoxentryIntegration {
         $this->scan_caldera_forms($forms);
     }
     
-    private function scan_elementor_pages(&$forms) {
-        if (!class_exists('\Elementor\Plugin')) {
-            return;
-        }
-        
-        // Skenování Elementor stránek
-        $elementor_pages = get_posts(array(
-            'post_type' => 'any',
-            'post_status' => 'publish',
-            'meta_query' => array(
-                array(
-                    'key' => '_elementor_edit_mode',
-                    'value' => 'builder',
-                    'compare' => '='
-                )
-            ),
-            'numberposts' => 100
-        ));
-        
-        foreach ($elementor_pages as $page) {
-            $elementor_data = get_post_meta($page->ID, '_elementor_data', true);
-            if ($elementor_data) {
-                $forms = array_merge($forms, $this->extract_forms_from_elementor($elementor_data, get_permalink($page->ID), $page->post_title));
-            }
-        }
-    }
-    
-    private function scan_bricks_pages(&$forms) {
-        if (!class_exists('Bricks\Core')) {
-            return;
-        }
-        
-        // Skenování Bricks stránek
-        $bricks_pages = get_posts(array(
-            'post_type' => 'any',
-            'post_status' => 'publish',
-            'meta_query' => array(
-                array(
-                    'key' => '_bricks_editor_mode',
-                    'value' => 'true',
-                    'compare' => '='
-                )
-            ),
-            'numberposts' => 100
-        ));
-        
-        foreach ($bricks_pages as $page) {
-            $bricks_data = get_post_meta($page->ID, '_bricks_page_content', true);
-            if ($bricks_data) {
-                $forms = array_merge($forms, $this->extract_forms_from_bricks($bricks_data, get_permalink($page->ID), $page->post_title));
-            }
-        }
-    }
     
     private function extract_forms_from_content($content, $page_url, $page_title = '') {
         $forms = array();
@@ -1541,41 +2086,16 @@ class FoxentryIntegration {
     }
     
     private function detect_field_type_intelligently($name, $type, $placeholder, $aria_label, $label) {
-        $text = strtolower($name . ' ' . $placeholder . ' ' . $aria_label . ' ' . $label);
-        
-        // Detekce emailu
-        if ($type === 'email' || 
-            strpos($text, 'email') !== false || 
-            strpos($text, 'e-mail') !== false ||
-            strpos($text, '@') !== false) {
+        // Jednoduchá detekce pouze podle typu pole
+        if ($type === 'email') {
             return 'email';
         }
         
-        // Detekce telefonu
-        if ($type === 'tel' || 
-            strpos($text, 'phone') !== false || 
-            strpos($text, 'telefon') !== false ||
-            strpos($text, 'mobil') !== false ||
-            strpos($text, 'mobile') !== false ||
-            strpos($text, 'cislo') !== false ||
-            strpos($text, 'číslo') !== false) {
+        if ($type === 'tel') {
             return 'phone';
         }
         
-        // Detekce adresy
-        if (strpos($text, 'address') !== false || 
-            strpos($text, 'adresa') !== false ||
-            strpos($text, 'street') !== false || 
-            strpos($text, 'ulice') !== false ||
-            strpos($text, 'city') !== false || 
-            strpos($text, 'mesto') !== false ||
-            strpos($text, 'město') !== false ||
-            strpos($text, 'psc') !== false ||
-            strpos($text, 'zip') !== false ||
-            strpos($text, 'postal') !== false) {
-            return 'address';
-        }
-        
+        // Pro všechna ostatní pole vrátíme 'text' - uživatel si vybere typ validace
         return 'text';
     }
     
@@ -2113,12 +2633,91 @@ class FoxentryIntegration {
         }
     }
     
+    private function extract_forms_from_gutenberg($content, $page_url, $page_title) {
+        $forms = array();
+        
+        // Parsování Gutenberg bloků
+        $blocks = parse_blocks($content);
+        $this->scan_gutenberg_blocks($blocks, $forms, $page_url, $page_title);
+        
+        return $forms;
+    }
+    
+    private function scan_gutenberg_blocks($blocks, &$forms, $page_url, $page_title) {
+        foreach ($blocks as $block) {
+            if (isset($block['blockName']) && $block['blockName']) {
+                // Kontrola formulářových bloků
+                if (strpos($block['blockName'], 'form') !== false || 
+                    strpos($block['blockName'], 'contact') !== false ||
+                    strpos($block['blockName'], 'wpforms') !== false ||
+                    strpos($block['blockName'], 'gravityforms') !== false) {
+                    
+                    $form_data = array(
+                        'type' => 'gutenberg',
+                        'title' => $page_title,
+                        'url' => $page_url,
+                        'content' => $block['innerHTML'] ?? '',
+                        'block_name' => $block['blockName']
+                    );
+                    $forms[] = $form_data;
+                }
+            }
+            
+            // Rekurzivní skenování vnořených bloků
+            if (isset($block['innerBlocks']) && is_array($block['innerBlocks'])) {
+                $this->scan_gutenberg_blocks($block['innerBlocks'], $forms, $page_url, $page_title);
+            }
+        }
+    }
+    
+    private function extract_forms_from_beaver($beaver_data, $page_url, $page_title) {
+        $forms = array();
+        
+        if (is_array($beaver_data)) {
+            foreach ($beaver_data as $node) {
+                if (isset($node->type) && $node->type === 'module' && 
+                    isset($node->settings->type) && strpos($node->settings->type, 'form') !== false) {
+                    
+                    $form_data = array(
+                        'type' => 'beaver_builder',
+                        'title' => $page_title,
+                        'url' => $page_url,
+                        'content' => $node->settings->html ?? '',
+                        'module_type' => $node->settings->type
+                    );
+                    $forms[] = $form_data;
+                }
+            }
+        }
+        
+        return $forms;
+    }
+    
+    private function extract_forms_from_divi($content, $page_url, $page_title) {
+        $forms = array();
+        
+        // Regex pro Divi formuláře
+        preg_match_all('/\[et_pb_contact_form[^\]]*\](.*?)\[\/et_pb_contact_form\]/is', $content, $matches);
+        
+        foreach ($matches[0] as $index => $form_shortcode) {
+            $form_data = array(
+                'type' => 'divi',
+                'title' => $page_title,
+                'url' => $page_url,
+                'content' => $form_shortcode,
+                'shortcode' => true
+            );
+            $forms[] = $form_data;
+        }
+        
+        return $forms;
+    }
 }
 
-// Spuštění pluginu
+// Inicializace pluginu
 new FoxentryIntegration();
 
-// Přidání nastavení odkazu do seznamu pluginů
+// Přidání linku do admin menu
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function($links) {
     $settings_link = '<a href="' . admin_url('options-general.php?page=foxentry-settings') . '">' . __('Nastavení', 'foxentry-integration') . '</a>';
     array_unshift($links, $settings_link);
