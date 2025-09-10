@@ -31,7 +31,6 @@
 [foxentry_validator type="email"]     <!-- Validátor emailových adres -->
 [foxentry_validator type="phone"]     <!-- Validátor telefonních čísel -->
 [foxentry_validator type="address"]   <!-- Validátor fyzických adres -->
-[foxentry_promo]                      <!-- Propagační banner Foxentry -->
 ```
 
 ### Pokročilé možnosti
@@ -46,11 +45,6 @@
 [foxentry_validator type="phone" required="false"]
 ```
 
-### Propagační banner
-```html
-<!-- Vlastní velikost -->
-[foxentry_promo width="336" height="280"]
-```
 
 ## 📋 Požadavky
 

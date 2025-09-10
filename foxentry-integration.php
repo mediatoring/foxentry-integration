@@ -54,13 +54,13 @@ class FoxentryIntegration {
         
         // Registrace shortcodů
         add_shortcode('foxentry_validator', array($this, 'validator_shortcode'));
-        add_shortcode('foxentry_promo', array($this, 'promo_shortcode'));
         
         // AJAX akce
         add_action('wp_ajax_foxentry_validate', array($this, 'ajax_validate'));
         add_action('wp_ajax_nopriv_foxentry_validate', array($this, 'ajax_validate'));
         add_action('wp_ajax_foxentry_test_api', array($this, 'ajax_test_api'));
         add_action('wp_ajax_foxentry_scan_forms', array($this, 'ajax_scan_forms'));
+        add_action('wp_ajax_foxentry_save_form_validation', array($this, 'ajax_save_form_validation'));
         
         // Enqueue scripts a styles
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
@@ -96,8 +96,202 @@ class FoxentryIntegration {
     
     public function admin_page() {
         ?>
+        <style>
+        /* Foxentry Admin Styles */
+        .foxentry-api-guide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+        
+        .guide-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .guide-header h2 {
+            color: white;
+            font-size: 28px;
+            margin: 0 0 10px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .guide-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .guide-step {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .guide-step:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .step-content {
+            flex: 1;
+            color: #333;
+        }
+        
+        .step-content h3 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .step-image {
+            margin: 15px 0;
+            text-align: center;
+            width: 33%;
+            flex-shrink: 0;
+        }
+        
+        .step-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.4s ease;
+            object-fit: cover;
+        }
+        
+        .critical-step {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: 2px solid #ff4757;
+        }
+        
+        .critical-step .step-content {
+            color: white;
+        }
+        
+        .final-step {
+            background: linear-gradient(135deg, #2ed573, #1e90ff);
+            color: white;
+        }
+        
+        .final-step .step-content {
+            color: white;
+        }
+        
+        .guide-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .guide-toggle-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .guide-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .foxentry-form-scanner {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .scanner-controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .scanner-controls .button-primary {
+            background: linear-gradient(135deg, #007cba, #005a87);
+            border-color: #007cba;
+        }
+        
+        .form-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .form-item:hover {
+            border-color: #007cba;
+            box-shadow: 0 2px 8px rgba(0, 124, 186, 0.1);
+        }
+        
+        .form-item.validation-applied {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        
+        .form-item.validation-applied h4 {
+            color: #28a745;
+        }
+        
+        .form-item .apply-validation:disabled {
+            background: #6c757d;
+            border-color: #6c757d;
+            cursor: not-allowed;
+        }
+        </style>
+        
         <div class="wrap">
             <h1><?php _e('Foxentry Nastavení', 'foxentry-integration'); ?></h1>
+            
+            <!-- Foxentry promo banner -->
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="https://foxentry.com/?aff=<?php echo FOXENTRY_AFFILIATE_CODE; ?>" target="_blank">
+                    <img src="<?php echo FOXENTRY_PLUGIN_URL; ?>assets/banner.jpg" width="336" height="280" alt="Foxentry - Validace dat" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                </a>
+            </div>
             
             <div class="notice notice-info">
                 <p>
@@ -111,7 +305,7 @@ class FoxentryIntegration {
             <!-- Vizuální průvodce pro získání API klíče -->
             <div class="foxentry-api-guide" id="foxentry-guide">
                 <div class="guide-header">
-                    <h2><?php _e('📋 Jak získat API klíč - Vizuální průvodce', 'foxentry-integration'); ?></h2>
+                    <h2><?php _e('Jak získat API klíč - Vizuální průvodce', 'foxentry-integration'); ?></h2>
                     <p><?php _e('Následujte tyto kroky pro získání vašeho Foxentry API klíče:', 'foxentry-integration'); ?></p>
                     <div class="guide-controls">
                         <button type="button" id="toggle-guide" class="guide-toggle-btn">
@@ -150,7 +344,7 @@ class FoxentryIntegration {
                     <div class="guide-step critical-step">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h3><?php _e('⚠️ DŮLEŽITÉ: Výběr typu projektu', 'foxentry-integration'); ?></h3>
+                            <h3><?php _e('DŮLEŽITÉ: Výběr typu projektu', 'foxentry-integration'); ?></h3>
                             <p><?php _e('Ve třetím kroku při vytváření projektu MUSÍTE vybrat "Aplikace" místo "Webová stránka"!', 'foxentry-integration'); ?></p>
                             <div class="step-image">
                                 <img src="<?php echo FOXENTRY_PLUGIN_URL; ?>assets/api01.png" alt="<?php _e('Výběr typu projektu - Aplikace', 'foxentry-integration'); ?>" />
@@ -216,7 +410,7 @@ class FoxentryIntegration {
                 
                 <div class="guide-footer">
                     <div class="success-tip">
-                        <h4><?php _e('✅ Úspěch!', 'foxentry-integration'); ?></h4>
+                        <h4><?php _e('Úspěch!', 'foxentry-integration'); ?></h4>
                         <p><?php _e('Pokud jste postupovali podle tohoto průvodce, máte nyní platný API klíč, který můžete použít v tomto pluginu.', 'foxentry-integration'); ?></p>
                     </div>
                 </div>
@@ -258,15 +452,15 @@ class FoxentryIntegration {
             
             <!-- Automatické skenování formulářů -->
             <div class="foxentry-form-scanner">
-                <h2><?php _e('🔍 Automatické skenování formulářů', 'foxentry-integration'); ?></h2>
+                <h2><?php _e('Automatické skenování formulářů', 'foxentry-integration'); ?></h2>
                 <p><?php _e('Plugin automaticky najde všechny formuláře na vašem webu a umožní vám vybrat, která pole chcete ověřovat.', 'foxentry-integration'); ?></p>
                 
                 <div class="scanner-controls">
                     <button type="button" id="scan-forms" class="button button-primary">
-                        <?php _e('🔍 Skenovat formuláře na webu', 'foxentry-integration'); ?>
+                        <?php _e('Skenovat formuláře na webu', 'foxentry-integration'); ?>
                     </button>
                     <button type="button" id="clear-scan" class="button" style="display: none;">
-                        <?php _e('🗑️ Vymazat výsledky', 'foxentry-integration'); ?>
+                        <?php _e('Vymazat výsledky', 'foxentry-integration'); ?>
                     </button>
                 </div>
                 
@@ -383,6 +577,42 @@ class FoxentryIntegration {
                 $(this).hide();
             });
             
+            // Aplikování validace na vybraná pole
+            $(document).on('click', '.apply-validation', function() {
+                var formIndex = $(this).data('form');
+                var selectedFields = [];
+                
+                // Získání vybraných polí
+                $('#forms-list .form-item').eq(formIndex).find('input[type="checkbox"]:checked').each(function() {
+                    selectedFields.push({
+                        name: $(this).val(),
+                        type: $(this).data('type')
+                    });
+                });
+                
+                if (selectedFields.length === 0) {
+                    alert('<?php _e('Vyberte alespoň jedno pole pro validaci', 'foxentry-integration'); ?>');
+                    return;
+                }
+                
+                // AJAX volání pro uložení nastavení
+                $.post(ajaxurl, {
+                    action: 'foxentry_save_form_validation',
+                    nonce: '<?php echo wp_create_nonce('foxentry_save_validation'); ?>',
+                    form_index: formIndex,
+                    fields: selectedFields
+                }, function(response) {
+                    if (response.success) {
+                        alert('<?php _e('Validace byla úspěšně aplikována!', 'foxentry-integration'); ?>');
+                        // Označit formulář jako zpracovaný
+                        $('#forms-list .form-item').eq(formIndex).addClass('validation-applied');
+                        $('#forms-list .form-item').eq(formIndex).find('.apply-validation').text('<?php _e('Validace aplikována', 'foxentry-integration'); ?>').prop('disabled', true);
+                    } else {
+                        alert('<?php _e('Chyba při aplikování validace:', 'foxentry-integration'); ?> ' + response.data);
+                    }
+                });
+            });
+            
             function displayScanResults(forms) {
                 var html = '';
                 if (forms.length === 0) {
@@ -396,8 +626,8 @@ class FoxentryIntegration {
                         html += '<ul>';
                         form.fields.forEach(function(field) {
                             html += '<li>';
-                            html += '<label><input type="checkbox" value="' + field.name + '" data-type="' + field.type + '"> ';
-                            html += field.name + ' (' + field.type + ')';
+                            html += '<label><input type="checkbox" value="' + field.name + '" data-type="' + field.validation_type + '" data-form="' + index + '"> ';
+                            html += field.name + ' (' + field.type + ') - <strong>' + field.validation_type + '</strong>';
                             html += '</label>';
                             html += '</li>';
                         });
@@ -457,26 +687,6 @@ class FoxentryIntegration {
         return ob_get_clean();
     }
     
-    public function promo_shortcode($atts) {
-        $atts = shortcode_atts(array(
-            'width' => '336',
-            'height' => '280'
-        ), $atts);
-        
-        return sprintf(
-            '<div class="foxentry-promo">
-                <a href="https://foxentry.com/?aff=%s" target="_blank">
-                    <img src="https://cdn.foxentry.cz/promo/purple_%sx%s.jpg" 
-                         width="%s" height="%s" 
-                         alt="Foxentry - Validace dat" 
-                         style="max-width: 100%%; height: auto;" />
-                </a>
-            </div>',
-            FOXENTRY_AFFILIATE_CODE,
-            $atts['width'], $atts['height'],
-            esc_attr($atts['width']), esc_attr($atts['height'])
-        );
-    }
     
     public function ajax_validate() {
         // Bezpečnostní kontrola
@@ -666,6 +876,12 @@ class FoxentryIntegration {
             true
         );
         
+        // Načtení vygenerovaného validation scriptu
+        $validation_script = get_option('foxentry_validation_script', '');
+        if (!empty($validation_script)) {
+            wp_add_inline_script('foxentry-frontend', $validation_script);
+        }
+        
         wp_localize_script('foxentry-frontend', 'foxentry_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('foxentry_validate'),
@@ -708,6 +924,14 @@ class FoxentryIntegration {
         
         wp_enqueue_script('jquery');
         
+        // Načtení CSS pro admin stránku
+        wp_enqueue_style(
+            'foxentry-admin',
+            FOXENTRY_PLUGIN_URL . 'assets/frontend.css',
+            array(),
+            FOXENTRY_PLUGIN_VERSION
+        );
+        
         // Test API AJAX
         add_action('wp_ajax_foxentry_test_api', array($this, 'ajax_test_api'));
     }
@@ -748,20 +972,65 @@ class FoxentryIntegration {
         wp_send_json_success($forms);
     }
     
+    public function ajax_save_form_validation() {
+        if (!wp_verify_nonce($_POST['nonce'], 'foxentry_save_validation')) {
+            wp_die(__('Bezpečnostní chyba', 'foxentry-integration'));
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Nedostatečná oprávnění', 'foxentry-integration'));
+        }
+        
+        $form_index = intval($_POST['form_index']);
+        $fields = $_POST['fields'];
+        
+        // Uložení nastavení do WordPress options
+        $validation_settings = get_option('foxentry_form_validation', array());
+        $validation_settings[$form_index] = $fields;
+        update_option('foxentry_form_validation', $validation_settings);
+        
+        // Generování JavaScript kódu pro aplikování validace
+        $this->generate_validation_script($fields);
+        
+        wp_send_json_success(__('Nastavení validace bylo uloženo', 'foxentry-integration'));
+    }
+    
+    private function generate_validation_script($fields) {
+        $script = "jQuery(document).ready(function($) {";
+        
+        foreach ($fields as $field) {
+            $field_name = sanitize_text_field($field['name']);
+            $field_type = sanitize_text_field($field['type']);
+            
+            $script .= "
+                $('input[name=\"{$field_name}\"], textarea[name=\"{$field_name}\"]').each(function() {
+                    var \$input = $(this);
+                    \$input.addClass('foxentry-validator');
+                    \$input.attr('data-type', '{$field_type}');
+                    
+                    // Přidání wrapperu pokud neexistuje
+                    if (!\$input.closest('.foxentry-field-wrapper').length) {
+                        \$input.wrap('<div class=\"foxentry-field-wrapper\"></div>');
+                        \$input.after('<div class=\"foxentry-result\"></div>');
+                    }
+                });
+            ";
+        }
+        
+        $script .= "});";
+        
+        // Uložení scriptu do WordPress
+        update_option('foxentry_validation_script', $script);
+    }
+    
     private function scan_website_forms() {
         $forms = array();
         
-        // Získání všech stránek a příspěvků
+        // 1. Skenování příspěvků a stránek
         $pages = get_posts(array(
             'post_type' => array('page', 'post'),
             'post_status' => 'publish',
-            'numberposts' => 50,
-            'meta_query' => array(
-                array(
-                    'key' => '_wp_page_template',
-                    'compare' => 'NOT EXISTS'
-                )
-            )
+            'numberposts' => 100,
         ));
         
         foreach ($pages as $page) {
@@ -770,8 +1039,20 @@ class FoxentryIntegration {
             $forms = array_merge($forms, $page_forms);
         }
         
-        // Skenování widgetů a dalších oblastí
+        // 2. Skenování Contact Form 7 formulářů
+        $this->scan_contact_form_7($forms);
+        
+        // 3. Skenování Gravity Forms
+        $this->scan_gravity_forms($forms);
+        
+        // 4. Skenování WPForms
+        $this->scan_wpforms($forms);
+        
+        // 5. Skenování widgetů
         $this->scan_widgets($forms);
+        
+        // 6. Skenování témat s formuláři
+        $this->scan_theme_forms($forms);
         
         return $forms;
     }
@@ -852,30 +1133,226 @@ class FoxentryIntegration {
     private function detect_field_type($name, $html_type) {
         $name_lower = strtolower($name);
         
-        // Detekce emailu
-        if (strpos($name_lower, 'email') !== false || strpos($name_lower, 'mail') !== false) {
+        // Detekce podle HTML typu
+        if ($html_type === 'email') {
             return 'email';
         }
-        
-        // Detekce telefonu
-        if (strpos($name_lower, 'phone') !== false || strpos($name_lower, 'tel') !== false || 
-            strpos($name_lower, 'telefon') !== false || strpos($name_lower, 'mobil') !== false) {
+        if ($html_type === 'tel') {
             return 'phone';
         }
         
-        // Detekce adresy
-        if (strpos($name_lower, 'address') !== false || strpos($name_lower, 'adresa') !== false ||
-            strpos($name_lower, 'street') !== false || strpos($name_lower, 'ulice') !== false ||
-            strpos($name_lower, 'city') !== false || strpos($name_lower, 'mesto') !== false) {
+        // Detekce emailu podle názvu
+        if (strpos($name_lower, 'email') !== false || 
+            strpos($name_lower, 'mail') !== false ||
+            strpos($name_lower, 'e-mail') !== false ||
+            strpos($name_lower, 'e_mail') !== false) {
+            return 'email';
+        }
+        
+        // Detekce telefonu podle názvu
+        if (strpos($name_lower, 'phone') !== false || 
+            strpos($name_lower, 'tel') !== false || 
+            strpos($name_lower, 'telefon') !== false || 
+            strpos($name_lower, 'mobil') !== false ||
+            strpos($name_lower, 'mobile') !== false ||
+            strpos($name_lower, 'telefonni') !== false ||
+            strpos($name_lower, 'cislo') !== false) {
+            return 'phone';
+        }
+        
+        // Detekce adresy podle názvu
+        if (strpos($name_lower, 'address') !== false || 
+            strpos($name_lower, 'adresa') !== false ||
+            strpos($name_lower, 'street') !== false || 
+            strpos($name_lower, 'ulice') !== false ||
+            strpos($name_lower, 'city') !== false || 
+            strpos($name_lower, 'mesto') !== false ||
+            strpos($name_lower, 'město') !== false ||
+            strpos($name_lower, 'psc') !== false ||
+            strpos($name_lower, 'zip') !== false ||
+            strpos($name_lower, 'postal') !== false) {
             return 'address';
+        }
+        
+        // Detekce jména
+        if (strpos($name_lower, 'name') !== false || 
+            strpos($name_lower, 'jmeno') !== false ||
+            strpos($name_lower, 'jméno') !== false ||
+            strpos($name_lower, 'firstname') !== false ||
+            strpos($name_lower, 'lastname') !== false ||
+            strpos($name_lower, 'krestni') !== false ||
+            strpos($name_lower, 'prijmeni') !== false) {
+            return 'text';
         }
         
         return 'text';
     }
     
+    private function scan_contact_form_7(&$forms) {
+        if (!class_exists('WPCF7_ContactForm')) {
+            return;
+        }
+        
+        $cf7_forms = get_posts(array(
+            'post_type' => 'wpcf7_contact_form',
+            'post_status' => 'publish',
+            'numberposts' => -1
+        ));
+        
+        foreach ($cf7_forms as $form) {
+            $form_data = array(
+                'page' => 'Contact Form 7: ' . $form->post_title,
+                'fields' => array()
+            );
+            
+            // Parsování CF7 shortcode
+            $content = $form->post_content;
+            preg_match_all('/\[([^\]]+)\]/', $content, $matches);
+            
+            foreach ($matches[1] as $field) {
+                $field_parts = explode(' ', $field);
+                $field_type = $field_parts[0];
+                $field_name = '';
+                
+                // Extrakce názvu pole
+                foreach ($field_parts as $part) {
+                    if (strpos($part, 'name=') === 0) {
+                        $field_name = str_replace(array('name=', '"', "'"), '', $part);
+                        break;
+                    }
+                }
+                
+                if ($field_name) {
+                    $validation_type = $this->detect_field_type($field_name, $field_type);
+                    $form_data['fields'][] = array(
+                        'name' => $field_name,
+                        'type' => $field_type,
+                        'validation_type' => $validation_type
+                    );
+                }
+            }
+            
+            if (!empty($form_data['fields'])) {
+                $forms[] = $form_data;
+            }
+        }
+    }
+    
+    private function scan_gravity_forms(&$forms) {
+        if (!class_exists('GFAPI')) {
+            return;
+        }
+        
+        $gf_forms = GFAPI::get_forms();
+        
+        foreach ($gf_forms as $form) {
+            $form_data = array(
+                'page' => 'Gravity Forms: ' . $form['title'],
+                'fields' => array()
+            );
+            
+            foreach ($form['fields'] as $field) {
+                $field_name = $field->label ?: $field->adminLabel;
+                $field_type = $field->type;
+                $validation_type = $this->detect_field_type($field_name, $field_type);
+                
+                $form_data['fields'][] = array(
+                    'name' => $field_name,
+                    'type' => $field_type,
+                    'validation_type' => $validation_type
+                );
+            }
+            
+            if (!empty($form_data['fields'])) {
+                $forms[] = $form_data;
+            }
+        }
+    }
+    
+    private function scan_wpforms(&$forms) {
+        if (!class_exists('WPForms')) {
+            return;
+        }
+        
+        $wpforms = get_posts(array(
+            'post_type' => 'wpforms',
+            'post_status' => 'publish',
+            'numberposts' => -1
+        ));
+        
+        foreach ($wpforms as $form) {
+            $form_data = array(
+                'page' => 'WPForms: ' . $form->post_title,
+                'fields' => array()
+            );
+            
+            $form_content = json_decode($form->post_content, true);
+            if (isset($form_content['fields'])) {
+                foreach ($form_content['fields'] as $field) {
+                    $field_name = $field['label'] ?? 'Field ' . $field['id'];
+                    $field_type = $field['type'] ?? 'text';
+                    $validation_type = $this->detect_field_type($field_name, $field_type);
+                    
+                    $form_data['fields'][] = array(
+                        'name' => $field_name,
+                        'type' => $field_type,
+                        'validation_type' => $validation_type
+                    );
+                }
+            }
+            
+            if (!empty($form_data['fields'])) {
+                $forms[] = $form_data;
+            }
+        }
+    }
+    
+    private function scan_theme_forms(&$forms) {
+        // Skenování témat s vestavěnými formuláři
+        $theme_forms = array(
+            'contact' => 'Kontaktní formulář',
+            'newsletter' => 'Newsletter formulář',
+            'search' => 'Vyhledávací formulář',
+            'login' => 'Přihlašovací formulář',
+            'register' => 'Registrační formulář'
+        );
+        
+        foreach ($theme_forms as $form_type => $form_name) {
+            // Zkontrolovat, zda téma má tento typ formuláře
+            if (function_exists($form_type . '_form') || 
+                get_theme_mod($form_type . '_form_enabled', false)) {
+                
+                $form_data = array(
+                    'page' => 'Téma: ' . $form_name,
+                    'fields' => array()
+                );
+                
+                // Přidat běžná pole pro tento typ formuláře
+                switch ($form_type) {
+                    case 'contact':
+                        $form_data['fields'][] = array('name' => 'name', 'type' => 'text', 'validation_type' => 'text');
+                        $form_data['fields'][] = array('name' => 'email', 'type' => 'email', 'validation_type' => 'email');
+                        $form_data['fields'][] = array('name' => 'phone', 'type' => 'tel', 'validation_type' => 'phone');
+                        $form_data['fields'][] = array('name' => 'message', 'type' => 'textarea', 'validation_type' => 'text');
+                        break;
+                    case 'newsletter':
+                        $form_data['fields'][] = array('name' => 'email', 'type' => 'email', 'validation_type' => 'email');
+                        break;
+                    case 'search':
+                        $form_data['fields'][] = array('name' => 's', 'type' => 'search', 'validation_type' => 'text');
+                        break;
+                }
+                
+                if (!empty($form_data['fields'])) {
+                    $forms[] = $form_data;
+                }
+            }
+        }
+    }
+    
     private function scan_widgets(&$forms) {
-        // Skenování widgetů (zjednodušená verze)
-        $widget_areas = array('sidebar-1', 'footer-1', 'footer-2', 'footer-3');
+        // Skenování widgetů
+        $widget_areas = array('sidebar-1', 'footer-1', 'footer-2', 'footer-3', 'sidebar', 'footer');
         
         foreach ($widget_areas as $area) {
             if (is_active_sidebar($area)) {

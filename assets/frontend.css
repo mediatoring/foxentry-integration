@@ -148,31 +148,6 @@
     to { transform: rotate(360deg); }
 }
 
-/* Promo banner styly */
-.foxentry-promo {
-    text-align: center;
-    margin: 20px 0;
-}
-
-.foxentry-promo a {
-    display: inline-block;
-    text-decoration: none;
-    transition: transform 0.3s ease;
-}
-
-.foxentry-promo a:hover {
-    transform: scale(1.05);
-}
-
-.foxentry-promo img {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: box-shadow 0.3s ease;
-}
-
-.foxentry-promo a:hover img {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
 
 /* Responsivní design */
 @media (max-width: 768px) {
@@ -389,7 +364,7 @@
 }
 
 .step-image img {
-    width: 100%;
+    width: 33%;
     height: auto;
     border-radius: 12px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
