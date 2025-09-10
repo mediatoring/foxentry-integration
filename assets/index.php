@@ -9,4 +9,3 @@
 
 // Zabránění přímému přístupu ke složce assets
 defined('ABSPATH') || exit('Direct access forbidden.');
-?>

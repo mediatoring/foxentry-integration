@@ -9,4 +9,3 @@
 
 // Zabránění přímému přístupu ke složce languages
 defined('ABSPATH') || exit('Direct access forbidden.');
-?>
